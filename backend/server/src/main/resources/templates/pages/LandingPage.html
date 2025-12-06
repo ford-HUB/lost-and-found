@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindIt - Lost & Found System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out forwards;
+        }
+        
+        .animate-slide-in-left {
+            animation: slideInLeft 0.8s ease-out forwards;
+        }
+        
+        .animate-slide-in-right {
+            animation: slideInRight 0.8s ease-out forwards;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+        .delay-600 { animation-delay: 0.6s; }
+        
+        .initial-hidden {
+            opacity: 0;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+        
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm fixed w-full top-0 z-50 initial-hidden animate-fade-in">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="inline-flex item-center text-2xl font-bold gradient-bg bg-clip-text">
+                        <img class="h-8 w-8" src="../assets/search.png" alt="" srcset="">FindIt
+                    </div>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#how-it-works" class="text-gray-700 hover:text-black transition">How It Works</a>
+                    <a href="#features" class="text-gray-700 hover:text-black transition">Features</a>
+                    <a href="#contact" class="text-gray-700 hover:text-black transition">Contact</a>
+                </div>
+                <div class="flex space-x-4">
+                    <button class="px-4 py-2 text-black hover:text-gray-700 transition"><a href="../pages/auth/SignUp.html">Sign Up</a></button>
+                    <button class="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition"><a href="../pages/auth/LoginPage.html">Get Started</a></button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="search" class="pt-32 pb-20 gradient-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="text-white">
+                    <h1 class="text-5xl font-bold mb-6 initial-hidden animate-fade-in-up">
+                        Lost Something? We'll Help You Find It
+                    </h1>
+                    <p class="text-xl mb-8 text-gray-300 initial-hidden animate-fade-in-up delay-200">
+                        The smartest way to reunite lost items with their owners. Report, search, and recover items in minutes.
+                    </p>
+                    <div class="flex space-x-4 initial-hidden animate-fade-in-up delay-300">
+                        <button class="px-8 py-4 bg-white text-black rounded-lg font-semibold hover:shadow-lg transition transform hover:scale-105">
+                            Report Lost Item
+                        </button>
+                        <button class="px-8 py-4 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-700 transition">
+                            Search Found Items
+                        </button>
+                    </div>
+                    <div class="mt-8 flex items-center space-x-6 initial-hidden animate-fade-in-up delay-400">
+                        <div>
+                            <div class="text-3xl font-bold">15,000+</div>
+                            <div class="text-gray-400">Items Recovered</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold">95%</div>
+                            <div class="text-gray-400">Success Rate</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="initial-hidden animate-slide-in-right delay-200">
+                    <div class="bg-white rounded-2xl shadow-2xl p-8">
+                        <div class="flex justify-center mb-6 space-x-2">
+                            <img class="h-12 w-12" src="../assets/mobile-img-icon.png" alt="" srcset="">
+                            <h3 class="text-2xl font-bold text-gray-800">Quick Search</h3>
+                        </div>
+                        <input type="text" placeholder="What did you lose?" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-black">
+                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-black">
+                            <option>Select Category</option>
+                            <option>Electronics</option>
+                            <option>Documents</option>
+                            <option>Accessories</option>
+                            <option>Keys</option>
+                            <option>Other</option>
+                        </select>
+                        <button class="w-full py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition">
+                            Search Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">How It Works</h2>
+                <p class="text-xl text-gray-600">Three simple steps to recover your lost items</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="flex-col justify-center text-center card-hover bg-gray-50 p-8 rounded-xl initial-hidden animate-fade-in-up delay-100">
+                    <img class="h-16 w-16 ml-32" src="../assets/documents.png" alt="">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">1. Report</h3>
+                    <p class="text-gray-600">Describe your lost item with details and upload photos if available</p>
+                </div>
+                <div class="text-center card-hover bg-gray-50 p-8 rounded-xl initial-hidden animate-fade-in-up delay-300">
+                    <img class="h-16 w-16 ml-32" src="../assets/notification.png" alt="" srcset="">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">2. Get Notified</h3>
+                    <p class="text-gray-600">Receive instant alerts when someone finds and reports your item</p>
+                </div>
+                <div class="text-center card-hover bg-gray-50 p-8 rounded-xl initial-hidden animate-fade-in-up delay-500">
+                    <img class="h-16 w-16 ml-32" src="../assets/handshake.png" alt="" srcset="">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">3. Recover</h3>
+                    <p class="text-gray-600">Coordinate with the finder to safely retrieve your item</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">Why Choose FindIt?</h2>
+                <p class="text-xl text-gray-600">Powerful features designed with you in mind</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover initial-hidden animate-slide-in-left delay-100">
+                    <img class="h-16 w-16" src="../assets/power.png" alt="" srcset="">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Instant Matching</h3>
+                    <p class="text-gray-600">Powered by system lost and found items automatically</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover initial-hidden animate-slide-in-left delay-200">
+                    <img class="h-16 w-16" src="../assets/lock.png" alt="" srcset="">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Secure & Private</h3>
+                    <p class="text-gray-600">Your personal information is protected and never shared publicly</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover initial-hidden animate-slide-in-left delay-300">
+                    <img class="h-16 w-16" src="../assets/worldwide.png" alt="" srcset="">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Wide Coverage</h3>
+                    <p class="text-gray-600">Connected network across multiple locations and organizations</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover initial-hidden animate-slide-in-left delay-400">
+                    <img class="h-16 w-16" src="../assets/camera.png" alt="" srcset="">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Photo Verification</h3>
+                    <p class="text-gray-600">Upload and compare photos to verify item ownership</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover initial-hidden animate-slide-in-left delay-500">
+                    <img class="h-16 w-16" src="../assets/chat.png" alt="" srcset="">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Direct Messaging</h3>
+                    <p class="text-gray-600">Communicate safely with finders through our platform</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover initial-hidden animate-slide-in-left delay-600">
+                    <img class="h-16 w-16" src="../assets/mobile-img-icon.png" alt="" srcset="">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Mobile Friendly</h3>
+                    <p class="text-gray-600">Access from anywhere on any device, anytime</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-black text-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold mb-6">Ready to Find What You Lost?</h2>
+            <p class="text-xl mb-8 text-gray-300">Join thousands of users who have successfully recovered their belongings</p>
+            <button class="px-10 py-4 bg-white text-black rounded-lg font-semibold text-lg hover:shadow-2xl transition transform hover:scale-105">
+                <a href="#search">Start Your Search Now</a>
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="text-2xl font-bold mb-4">🔍 FindIt</div>
+                    <p class="text-gray-400">Reuniting people with their belongings, one item at a time.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition">About Us</a></li>
+                        <li><a href="#" class="hover:text-white transition">How It Works</a></li>
+                        <li><a href="#" class="hover:text-white transition">Success Stories</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white transition">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Connect</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition">Facebook</a></li>
+                        <li><a href="#" class="hover:text-white transition">Twitter</a></li>
+                        <li><a href="#" class="hover:text-white transition">Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 FindIt. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
