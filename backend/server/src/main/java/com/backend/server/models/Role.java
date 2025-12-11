@@ -9,11 +9,19 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long role_id;
 
+    @OneToOne
+    @JoinColumn(
+        name = "accounts",
+        referencedColumnName = "account_id",
+        nullable = false
+    )
+    private Account account;
+
     @Column(
         nullable = false,
         length = 55
     )
-    private String role_name;
+    private String roleName;
 
     @Column(
         nullable = true,
@@ -23,20 +31,23 @@ public class Role {
 
     public Role () {} // Initialize Contructor
 
-    public Role (Long role_id, String role_name, String description) {
+    public Role (Long role_id, String roleName, String description, Account account) {
         this.role_id = role_id;
-        this.role_name = role_name;
+        this.roleName = roleName;
         this.description = description;
+        this.account = account;
     }
 
     // @getters
     public Long getRoleId() { return role_id; }
-    public String getRoleName() { return role_name; }
+    public String getRoleName() { return roleName; }
     public String getDescription() { return description; }
+    public Account getAccount() { return account; }
 
     // @setters
     public void setRoleId(Long role_id) { this.role_id = role_id; }
-    public void setRoleName(String role_name) { this.role_name = role_name; }
+    public void setRoleName(String roleName) { this.roleName = roleName; }
     public void setDescription(String description) { this.description = description; }
+    public void setAccount(Account account) { this.account = account; }
 
 }

@@ -9,7 +9,7 @@
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -17,45 +17,29 @@
             }
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
         .animate-fade-in-up {
-            animation: fadeInUp 0.8s ease-out forwards;
+            animation: fadeInUp 0.6s ease-out forwards;
         }
         
-        .animate-fade-in {
-            animation: fadeIn 1s ease-out forwards;
+        .animate-delay-1 {
+            animation-delay: 0.1s;
+            opacity: 0;
         }
         
-        .animate-scale-in {
-            animation: scaleIn 0.6s ease-out forwards;
+        .animate-delay-2 {
+            animation-delay: 0.2s;
+            opacity: 0;
         }
         
-        .delay-100 { animation-delay: 0.1s; }
-        .delay-200 { animation-delay: 0.2s; }
-        .delay-300 { animation-delay: 0.3s; }
-        
-        .initial-hidden {
+        .animate-delay-3 {
+            animation-delay: 0.3s;
             opacity: 0;
         }
         
         .input-focus:focus {
+            outline: none;
             border-color: #000;
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
         }
         
         .step-circle {
@@ -65,11 +49,13 @@
         .step-circle.active {
             background-color: #000;
             color: #fff;
+            border-color: #000;
         }
         
         .step-circle.completed {
-            background-color: #4ade80;
+            background-color: #000;
             color: #fff;
+            border-color: #000;
         }
         
         .step-line {
@@ -77,7 +63,7 @@
         }
         
         .step-line.completed {
-            background-color: #4ade80;
+            background-color: #000;
         }
         
         .step-content {
@@ -89,246 +75,240 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm fixed w-full top-0 z-50 initial-hidden animate-fade-in">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <a href="../LandingPage.html" class="flex items-center">
-                    <div class="inline-flex item-center text-2xl font-bold gradient-bg bg-clip-text">
-                        <img class="h-8 w-8" src="../../assets/search.png" alt="" srcset="">FindIt
+<body class="bg-white min-h-screen flex flex-col">
+    <!-- Header Navigation -->
+    <header class="w-full py-4 px-6 animate-fade-in-up">
+        <nav class="flex justify-between items-center max-w-7xl mx-auto">
+            <a href="../LandingPage.html" class="flex items-center">
+                <img class="h-8 w-8 mr-2" src="../../assets/search.png" alt="FindIt">
+                <div class="text-xl font-semibold text-black">FindIt</div>
+            </a>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-600 text-sm">Already have an account?</span>
+                <a href="LoginPage.html" class="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors font-medium">Sign In</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content - Centered Sign Up Form -->
+    <main class="flex-1 flex flex-col items-center justify-center px-4 py-12">
+        <!-- Title -->
+        <div class="mb-8 animate-fade-in-up animate-delay-1">
+            <h1 class="text-5xl font-light text-black tracking-tight text-center">Create Account</h1>
+            <p class="text-lg text-gray-600 mt-4 text-center font-light">Join thousands of users finding their lost items</p>
+        </div>
+
+        <!-- Sign Up Form Container -->
+        <div class="w-full max-w-md animate-fade-in-up animate-delay-2">
+            <!-- Progress Steps -->
+            <div class="flex items-center justify-center mb-8">
+                <div class="flex items-center">
+                    <div id="step1-circle" class="step-circle active w-10 h-10 rounded-full border-2 border-black bg-black text-white flex items-center justify-center font-medium text-sm">
+                        1
                     </div>
-                </a>
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-600">Already have an account?</span>
-                    <button class="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition"><a href="../auth/LoginPage.html">Sign In</a></button>
+                    <div id="line1" class="step-line w-12 h-0.5 bg-gray-300 mx-1"></div>
+                    <div id="step2-circle" class="step-circle w-10 h-10 rounded-full border-2 border-gray-300 bg-white text-gray-600 flex items-center justify-center font-medium text-sm">
+                        2
+                    </div>
+                    <div id="line2" class="step-line w-12 h-0.5 bg-gray-300 mx-1"></div>
+                    <div id="step3-circle" class="step-circle w-10 h-10 rounded-full border-2 border-gray-300 bg-white text-gray-600 flex items-center justify-center font-medium text-sm">
+                        3
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
 
-    <!-- Sign Up Section -->
-    <section class="min-h-screen pt-20 pb-12 flex items-center justify-center">
-        <div class="max-w-md mx-auto px-4 w-full">
-            <div class="initial-hidden animate-scale-in delay-100">
-                <div class="bg-white p-6 rounded-2xl shadow-xl">
-                    <div class="text-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-1">Create Account</h2>
-                        <p class="text-sm text-gray-600">Join thousands of users finding their lost items</p>
-                    </div>
+            <form id="signupForm">
+                <!-- Step 1: Personal Information -->
+                <div id="step1" class="step-content active">
+                    <h3 class="text-xl font-light text-black mb-6 text-center">Personal Information</h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Full Name Field -->
+                        <div>
+                            <label class="block text-sm font-medium text-black mb-2">Full Name</label>
+                            <input 
+                                type="text" 
+                                id="fullName"
+                                placeholder="John Doe"
+                                class="w-full px-4 py-3 border-2 border-black rounded-full input-focus focus:outline-none transition bg-white text-black placeholder-gray-500"
+                                required
+                            >
+                        </div>
 
-                    <!-- Progress Steps -->
-                    <div class="flex items-center justify-center mb-6">
-                        <div class="flex items-center">
-                            <div id="step1-circle" class="step-circle active w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-semibold">
-                                1
-                            </div>
-                            <div id="line1" class="step-line w-12 h-0.5 bg-gray-300 mx-1"></div>
-                            <div id="step2-circle" class="step-circle w-10 h-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-semibold">
-                                2
-                            </div>
-                            <div id="line2" class="step-line w-12 h-0.5 bg-gray-300 mx-1"></div>
-                            <div id="step3-circle" class="step-circle w-10 h-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-semibold">
-                                3
-                            </div>
+                        <!-- Email Input -->
+                        <div>
+                            <label class="block text-sm font-medium text-black mb-2">Email Address</label>
+                            <input 
+                                type="email" 
+                                id="email"
+                                placeholder="you@example.com"
+                                class="w-full px-4 py-3 border-2 border-black rounded-full input-focus focus:outline-none transition bg-white text-black placeholder-gray-500"
+                                required
+                            >
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div>
+                            <label class="block text-sm font-medium text-black mb-2">Phone Number</label>
+                            <input 
+                                type="tel" 
+                                id="phone"
+                                placeholder="+1 (555) 000-0000"
+                                class="w-full px-4 py-3 border-2 border-black rounded-full input-focus focus:outline-none transition bg-white text-black placeholder-gray-500"
+                                length="11"
+                                required
+                            >
+                        </div>
+
+                        <!-- Address -->
+                        <div>
+                            <label class="block text-sm font-medium text-black mb-2">Current Address</label>
+                            <input 
+                                type="text" 
+                                id="address"
+                                placeholder="Basak, Lapu-lapu City, Cebu"
+                                class="w-full px-4 py-3 border-2 border-black rounded-full input-focus focus:outline-none transition bg-white text-black placeholder-gray-500"
+                                required
+                            >
                         </div>
                     </div>
 
-                    <form id="signupForm">
-                        <!-- Step 1: Personal Information -->
-                        <div id="step1" class="step-content active">
-                            <h3 class="text-lg font-bold text-gray-800 mb-4">Personal Information</h3>
-                            
-                            <div class="space-y-4">
-                                <!-- Full Name Field -->
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-                                    <input 
-                                        type="text" 
-                                        id="fullName"
-                                        placeholder="John Doe"
-                                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus focus:outline-none transition"
-                                        required
-                                    >
-                                </div>
-
-                                <!-- Email Input -->
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                                    <input 
-                                        type="email" 
-                                        id="email"
-                                        placeholder="you@example.com"
-                                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus focus:outline-none transition"
-                                        required
-                                    >
-                                </div>
-
-                                <!-- Phone Number -->
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                                    <input 
-                                        type="tel" 
-                                        id="phone"
-                                        placeholder="+1 (555) 000-0000"
-                                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus focus:outline-none transition"
-                                        length="11"
-                                        required
-                                    >
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Current Address</label>
-                                    <input 
-                                        type="text" 
-                                        id="address"
-                                        placeholder="Basak, Lapu-lapu City, Cebu"
-                                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus focus:outline-none transition"
-                                        required
-                                    >
-                                </div>
-                            </div>
-
-                            <div class="mt-6">
-                                <button 
-                                    type="button"
-                                    onclick="nextStep(2)"
-                                    class="w-full py-2.5 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition transform hover:scale-105"
-                                >
-                                    Continue
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Step 2: Security -->
-                        <div id="step2" class="step-content">
-                            <h3 class="text-lg font-bold text-gray-800 mb-4">Security</h3>
-                            
-                            <div class="space-y-4">
-                                <!-- Password Input -->
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                                    <input 
-                                        type="password" 
-                                        id="password"
-                                        placeholder="Create a strong password"
-                                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus focus:outline-none transition"
-                                        required
-                                    >
-                                    <p class="text-xs text-gray-500 mt-1">Must be at least 8 characters with letters and numbers</p>
-                                </div>
-
-                                <!-- Confirm Password -->
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
-                                    <input 
-                                        type="password" 
-                                        id="confirmPassword"
-                                        placeholder="Re-enter your password"
-                                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus focus:outline-none transition"
-                                        required
-                                    >
-                                    <p id="passwordError" class="text-xs text-red-600 mt-1 hidden">Passwords do not match</p>
-                                </div>
-                            </div>
-
-                            <div class="mt-6 flex space-x-3">
-                                <button 
-                                    type="button"
-                                    onclick="prevStep(1)"
-                                    class="w-1/3 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition"
-                                >
-                                    Back
-                                </button>
-                                <button 
-                                    type="button"
-                                    onclick="nextStep(3)"
-                                    class="w-2/3 py-2.5 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition transform hover:scale-105"
-                                >
-                                    Continue
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Step 3: Preferences & Confirmation -->
-                        <div id="step3" class="step-content">
-                            <h3 class="text-lg font-bold text-gray-800 mb-4">Almost Done!</h3>
-                            
-                            <div class="space-y-4">
-                                <!-- Terms and Conditions -->
-                                <div class="flex items-start">
-                                    <input type="checkbox" id="terms" class="w-4 h-4 mt-1 text-black border-gray-300 rounded focus:ring-black" required>
-                                    <label class="ml-2 text-sm text-gray-600">
-                                        I agree to the <a href="#" class="text-black font-semibold hover:underline">Terms of Service</a> and <a href="#" class="text-black font-semibold hover:underline">Privacy Policy</a>
-                                    </label>
-                                </div>
-
-                                <!-- Newsletter -->
-                                <div class="flex items-start">
-                                    <input type="checkbox" id="newsletter" class="w-4 h-4 mt-1 text-black border-gray-300 rounded focus:ring-black">
-                                    <label class="ml-2 text-sm text-gray-600">
-                                        Send me updates about new features and lost item matches
-                                    </label>
-                                </div>
-
-                                <!-- Summary -->
-                                <div class="bg-gray-50 p-4 rounded-lg mt-4">
-                                    <h4 class="font-semibold text-gray-800 mb-3">Account Summary</h4>
-                                    <div class="space-y-2 text-sm text-gray-600">
-                                        <div class="flex justify-between">
-                                            <span>Name:</span>
-                                            <span id="summaryName" class="font-semibold text-gray-800">-</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span>Email:</span>
-                                            <span id="summaryEmail" class="font-semibold text-gray-800">-</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span>Phone:</span>
-                                            <span id="summaryPhone" class="font-semibold text-gray-800">-</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span>Phone:</span>
-                                            <span id="summaryAddress" class="font-semibold text-gray-800">-</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mt-6 flex space-x-3">
-                                <button 
-                                    type="button"
-                                    onclick="prevStep(2)"
-                                    class="w-1/3 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition"
-                                >
-                                    Back
-                                </button>
-                                <button 
-                                    type="submit"
-                                    class="w-2/3 py-2.5 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition transform hover:scale-105"
-                                >
-                                    Create Account
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    <div class="mt-6">
+                        <button 
+                            type="button"
+                            onclick="nextStep(2)"
+                            class="w-full py-3 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors"
+                        >
+                            Continue
+                        </button>
+                    </div>
                 </div>
-            </div>
+
+                <!-- Step 2: Security -->
+                <div id="step2" class="step-content">
+                    <h3 class="text-xl font-light text-black mb-6 text-center">Security</h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Password Input -->
+                        <div>
+                            <label class="block text-sm font-medium text-black mb-2">Password</label>
+                            <input 
+                                type="password" 
+                                id="password"
+                                placeholder="Create a strong password"
+                                class="w-full px-4 py-3 border-2 border-black rounded-full input-focus focus:outline-none transition bg-white text-black placeholder-gray-500"
+                                required
+                            >
+                            <p class="text-xs text-gray-500 mt-2 font-light">Must be at least 8 characters with letters and numbers</p>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div>
+                            <label class="block text-sm font-medium text-black mb-2">Confirm Password</label>
+                            <input 
+                                type="password" 
+                                id="confirmPassword"
+                                placeholder="Re-enter your password"
+                                class="w-full px-4 py-3 border-2 border-black rounded-full input-focus focus:outline-none transition bg-white text-black placeholder-gray-500"
+                                required
+                            >
+                            <p id="passwordError" class="text-xs text-red-600 mt-2 hidden font-light">Passwords do not match</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex space-x-3">
+                        <button 
+                            type="button"
+                            onclick="prevStep(1)"
+                            class="w-1/3 py-3 border-2 border-black text-black rounded-full font-medium hover:bg-black hover:text-white transition-all"
+                        >
+                            Back
+                        </button>
+                        <button 
+                            type="button"
+                            onclick="nextStep(3)"
+                            class="w-2/3 py-3 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors"
+                        >
+                            Continue
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Preferences & Confirmation -->
+                <div id="step3" class="step-content">
+                    <h3 class="text-xl font-light text-black mb-6 text-center">Almost Done!</h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Terms and Conditions -->
+                        <div class="flex items-start">
+                            <input type="checkbox" id="terms" class="w-4 h-4 mt-1 text-black border-2 border-black rounded focus:ring-black" required>
+                            <label class="ml-2 text-sm text-gray-600 font-light">
+                                I agree to the <a href="#" class="text-black font-medium hover:text-gray-600 transition-colors">Terms of Service</a> and <a href="#" class="text-black font-medium hover:text-gray-600 transition-colors">Privacy Policy</a>
+                            </label>
+                        </div>
+
+                        <!-- Newsletter -->
+                        <div class="flex items-start">
+                            <input type="checkbox" id="newsletter" class="w-4 h-4 mt-1 text-black border-2 border-black rounded focus:ring-black">
+                            <label class="ml-2 text-sm text-gray-600 font-light">
+                                Send me updates about new features and lost item matches
+                            </label>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="bg-gray-50 p-4 rounded-lg mt-4 border border-gray-200">
+                            <h4 class="font-medium text-black mb-3">Account Summary</h4>
+                            <div class="space-y-2 text-sm text-gray-600 font-light">
+                                <div class="flex justify-between">
+                                    <span>Name:</span>
+                                    <span id="summaryName" class="font-medium text-black">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Email:</span>
+                                    <span id="summaryEmail" class="font-medium text-black">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Phone:</span>
+                                    <span id="summaryPhone" class="font-medium text-black">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Address:</span>
+                                    <span id="summaryAddress" class="font-medium text-black">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex space-x-3">
+                        <button 
+                            type="button"
+                            onclick="prevStep(2)"
+                            class="w-1/3 py-3 border-2 border-black text-black rounded-full font-medium hover:bg-black hover:text-white transition-all"
+                        >
+                            Back
+                        </button>
+                        <button 
+                            type="submit"
+                            class="w-2/3 py-3 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors"
+                        >
+                            Create Account
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
-    </section>
+    </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="text-gray-400 mb-4 md:mb-0">
-                    <p>&copy; 2024 FindIt. All rights reserved.</p>
-                </div>
-                <div class="flex space-x-6 text-gray-400">
-                    <a href="#" class="hover:text-white transition">Help Center</a>
-                    <a href="#" class="hover:text-white transition">Contact</a>
-                    <a href="#" class="hover:text-white transition">Privacy</a>
-                </div>
+    <footer class="w-full py-4 px-6 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto flex justify-between items-center text-sm text-gray-600 font-light">
+            <div class="flex space-x-6">
+                <a href="#" class="hover:text-black transition-colors">Help Center</a>
+                <a href="#" class="hover:text-black transition-colors">Contact</a>
+                <a href="#" class="hover:text-black transition-colors">Privacy</a>
+            </div>
+            <div class="text-gray-500">
+                © 2024 FindIt. All rights reserved.
             </div>
         </div>
     </footer>
@@ -358,7 +338,7 @@
                 const confirmPassword = document.getElementById('confirmPassword').value;
                 
                 if (!password || !confirmPassword) {
-                    alert('Please fill in all fields');
+                    toastError('Please fill in all fields');
                     return;
                 }
                 
@@ -368,7 +348,7 @@
                 }
                 
                 if (password.length < 8) {
-                    alert('Password must be at least 8 characters');
+                    toastError('Password must be at least 8 characters');
                     return;
                 }
                 
@@ -433,18 +413,24 @@
             }
             
             const payload = {
-                fullName: document.getElementById('fullName').value,
+                fullname: document.getElementById('fullName').value,
                 email: document.getElementById('email').value,
                 contact_number: document.getElementById('phone').value,
                 address: document.getElementById('address').value,
-                password: document.getElementById('confirmPassword').value
+                password: document.getElementById('confirmPassword').value,
+                role_name: 'USER',
+                description: 'Regular user account'
             }
 
             const response = fetch('http://localhost:8080/api/auth/signup', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
-            }).then(response => response.json()).then(data => toastSuccess(data))
+            }).then(response => response.json()).then(data => {
+                toastSuccess(data.message)
+                console.log('success test', data)
+            }
+            )
             .catch(error => toastError(error))   
         });
     </script>

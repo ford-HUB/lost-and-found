@@ -1,14 +1,30 @@
 package com.backend.server.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Data
 public class RequestSignUp {
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
     private String email;
+    
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
+    
+    @NotBlank(message = "Full name is required")
+    @Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters")
     private String fullname;
+    
+    @Size(max = 20, message = "Contact number must not exceed 20 characters")
     private String contact_number;
+    
+    @Size(max = 255, message = "Address must not exceed 255 characters")
     private String address;
-    private String role_name;
-    private String description;
+    
+    private String roleName = "USER";
+    private String description = "Regular user account";
 }

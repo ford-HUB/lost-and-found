@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - Lost & Found Registry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Authentication Checker - Protects this page -->
+    <script src="../../js/auth-checker.js"></script>
+    <style>
+        .chat-container {
+            height: calc(100vh - 200px);
+        }
+        
+        .conversations-list {
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+        
+        .chat-messages {
+            height: calc(100vh - 280px);
+            overflow-y: auto;
+        }
+        
+        /* Custom scrollbar */
+        .conversations-list::-webkit-scrollbar,
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .conversations-list::-webkit-scrollbar-track,
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .conversations-list::-webkit-scrollbar-thumb,
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+        
+        .conversations-list::-webkit-scrollbar-thumb:hover,
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header Navigation -->
+    <header class="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <nav class="flex justify-between items-center max-w-7xl mx-auto px-4 py-3">
+            <a href="SearchEnginePage.html" class="text-xl font-semibold text-black">Lost & Found</a>
+            <div class="flex items-center space-x-6">
+                <a href="MyItemsPage.html" class="text-black hover:text-gray-600 transition-colors">My Items</a>
+                <a href="ReportItemPage.html" class="text-black hover:text-gray-600 transition-colors">Report Item</a>
+                <a href="MessagesPage.html" class="text-black font-medium border-b-2 border-black">Messages</a>
+                <a href="ProfilePage.html" class="text-black hover:text-gray-600 transition-colors">Profile</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto mt-10 px-4 py-6">
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm chat-container flex">
+            <!-- Conversations Sidebar -->
+            <div class="w-full md:w-1/3 border-r border-gray-200 flex flex-col">
+                <!-- Search Bar -->
+                <div class="p-4 border-b border-gray-200">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="conversationSearch"
+                            placeholder="Search conversations..." 
+                            class="w-full px-4 py-2 pl-10 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors"
+                            onkeyup="filterConversations()"
+                        >
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Conversations List -->
+                <div id="conversationsList" class="conversations-list flex-1 overflow-y-auto">
+                    <!-- Conversations will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Item Selection Modal (for messaging from profile) -->
+            <div id="itemSelectionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onclick="if(event.target === this) closeItemSelectionModal()">
+                <div class="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col" onclick="event.stopPropagation()">
+                    <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                        <h3 class="text-xl font-semibold text-black">Select an Item to Message About</h3>
+                        <button onclick="closeItemSelectionModal()" class="text-gray-500 hover:text-black transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="itemSelectionList" class="flex-1 overflow-y-auto p-6">
+                        <!-- Items will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="hidden flex-1 flex-col" id="chatArea">
+                <!-- Chat Header -->
+                <div id="chatHeader" class="p-4 border-b border-gray-200 flex items-center justify-between bg-white">
+                    <!-- Clickable user info area -->
+                    <button 
+                        type="button"
+                        onclick="openChatUserProfile()"
+                        class="flex items-center space-x-3 flex-1 min-w-0 text-left hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"
+                    >
+                        <img 
+                            id="chatAvatar"
+                            src="" 
+                            alt="User" 
+                            class="w-10 h-10 rounded-full border-2 border-black object-cover flex-shrink-0"
+                        >
+                        <div class="min-w-0 flex-1">
+                            <h3 id="chatUserName" class="font-semibold text-black truncate"></h3>
+                            <!-- Item name moved to an item card above messages; keep hidden here -->
+                            <p id="chatItemName" class="text-xs text-gray-500 truncate hidden"></p>
+                            <p id="chatUserEmail" class="text-xs text-gray-500 truncate hidden"></p>
+                            <p id="chatUserPhone" class="text-xs text-gray-500 truncate hidden"></p>
+                        </div>
+                    </button>
+                    <button 
+                        onclick="closeChat()"
+                        class="md:hidden px-3 py-1 border-2 border-gray-300 rounded-lg hover:border-black transition-colors flex-shrink-0"
+                    >
+                        Close
+                    </button>
+                </div>
+
+                <!-- Messages Container -->
+                <div id="chatMessages" class="chat-messages flex-1 p-4 space-y-4 overflow-y-auto">
+                    <!-- Messages will be dynamically inserted here -->
+                </div>
+
+                <!-- Message Input -->
+                <div class="p-4 border-t border-gray-200 bg-white">
+                    <form id="messageForm" onsubmit="sendMessage(event)" class="flex items-center gap-2">
+                        <input 
+                            type="text" 
+                            id="messageInput"
+                            placeholder="Type a message..." 
+                            class="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors"
+                            required
+                        >
+                        <button 
+                            type="submit"
+                            class="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium whitespace-nowrap flex-shrink-0"
+                        >
+                            Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Empty Chat State -->
+            <div id="emptyChatState" class="hidden md:flex flex-1 items-center justify-center">
+                <div class="text-center">
+                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <p class="text-gray-600">Select a conversation to start messaging</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- SockJS and STOMP.js libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../js/toaster.js"></script>
+    
+    <script>
+        // WebSocket and STOMP client
+        let stompClient = null;
+        let conversations = [];
+        let currentConversationId = null;
+        let currentUserId = null;
+        let currentUserEmail = null;
+
+        // Get JWT token from localStorage or cookie
+        function getJwtToken() {
+            // Try localStorage first (set during login)
+            const tokenFromStorage = localStorage.getItem('jwt_token');
+            if (tokenFromStorage) {
+                return tokenFromStorage;
+            }
+            
+            // Fallback to cookie (if not httpOnly)
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'jwt') {
+                    return value;
+                }
+            }
+            return null;
+        }
+
+        // Connect to WebSocket
+        function connectWebSocket() {
+            const token = getJwtToken();
+            
+            if (!token) {
+                console.warn('No JWT token found, WebSocket connection may fail');
+            }
+            
+            // Create SockJS connection
+            // If token is available, include it as query parameter; otherwise server will read from httpOnly cookie
+            let wsUrl = 'http://localhost:8080/ws';
+            if (token) {
+                wsUrl += `?token=${encodeURIComponent(token)}`;
+            }
+            
+            console.log('Connecting to WebSocket:', wsUrl);
+            const socket = new SockJS(wsUrl);
+            stompClient = StompJs.Stomp.over(socket);
+            
+            // Enable debug logging temporarily to see what's happening
+            stompClient.debug = function(str) {
+                console.log('STOMP:', str);
+            };
+
+            // Connect with JWT token in headers if available
+            const headers = {};
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+            
+            console.log('Attempting WebSocket connection with headers:', Object.keys(headers));
+            
+            stompClient.connect(
+                headers,
+                function(frame) {
+                    console.log('✅ Connected to WebSocket successfully!', frame);
+                    console.log('WebSocket connected:', stompClient.connected);
+                    
+                    // Subscribe to user's personal message queue
+                    const subscription = stompClient.subscribe('/user/queue/messages', function(message) {
+                        console.log('📨 Received message on /user/queue/messages:', message.body);
+                        try {
+                            const messageData = JSON.parse(message.body);
+                            handleIncomingMessage(messageData);
+                        } catch (e) {
+                            console.error('❌ Error parsing message:', e, message.body);
+                        }
+                    });
+                    console.log('✅ Subscribed to /user/queue/messages, subscription:', subscription);
+                },
+                function(error) {
+                    console.error('❌ WebSocket connection error:', error);
+                    console.error('Error details:', JSON.stringify(error, null, 2));
+                    // Retry connection after 5 seconds
+                    setTimeout(() => {
+                        console.log('Retrying WebSocket connection...');
+                        connectWebSocket();
+                    }, 5000);
+                }
+            );
+        }
+
+        // Handle incoming real-time messages
+        function handleIncomingMessage(messageData) {
+            console.log('Received WebSocket message:', messageData);
+            
+            // If this is our own message, skip adding it again because we already
+            // rendered it optimistically in sendMessage(). This prevents the
+            // duplicate "my message" bubble on the left side.
+            const incomingSenderId = Number(messageData.senderId);
+            const currentId = Number(currentUserId);
+            if (currentId && incomingSenderId === currentId) {
+                console.log('Ignoring own message from WebSocket (already rendered locally).');
+                return;
+            }
+            
+            // Find the conversation
+            let conversation = conversations.find(c => c.conversationId === messageData.conversationId);
+            
+            // If conversation doesn't exist, we need to load it
+            if (!conversation) {
+                console.log('Conversation not found in local cache, loading from server...');
+                // Load the conversation asynchronously
+                loadConversation(messageData.conversationId).then(loadedConv => {
+                    if (loadedConv) {
+                        handleIncomingMessage(messageData); // Retry after loading
+                    }
+                });
+                return;
+            }
+            
+            // Add message to conversation
+            const message = {
+                messageId: messageData.messageId,
+                senderId: messageData.senderId,
+                senderName: messageData.senderName,
+                text: messageData.messageText,
+                timestamp: messageData.createdAt,
+                isRead: messageData.isRead
+            };
+            
+            // Check if message already exists (avoid duplicates)
+            const messageExists = conversation.messages.some(m => m.messageId === message.messageId);
+            if (messageExists) {
+                console.log('Message already exists, skipping...');
+                return;
+            }
+            
+            conversation.messages.push(message);
+            conversation.lastMessage = messageData.messageText;
+            conversation.lastMessageAt = messageData.createdAt;
+            
+            // If this conversation is currently open, render the message
+            if (currentConversationId === conversation.conversationId) {
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.innerHTML += renderMessage(message);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Mark as read
+                markMessagesAsRead(conversation.conversationId);
+            } else {
+                // Update unread count
+                if (messageData.senderId !== currentUserId) {
+                    conversation.unreadCount = (conversation.unreadCount || 0) + 1;
+                }
+            }
+            
+            // Re-render conversations list
+            renderConversations(conversations);
+        }
+
+        // Load conversations from API
+        async function loadConversations() {
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/messages/conversations', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        conversations = data.conversations.map(conv => ({
+                            conversationId: conv.conversationId,
+                            id: conv.conversationId, // For backward compatibility
+                            userId: conv.otherUserId,
+                            userName: conv.otherUserName,
+                            userAvatar: conv.otherUserAvatar,
+                            itemName: conv.itemName,
+                            itemId: conv.itemId,
+                            lastMessage: conv.lastMessage || '',
+                            lastMessageTime: formatTime(conv.lastMessageAt),
+                            unreadCount: conv.unreadCount || 0,
+                            messages: conv.messages || [],
+                            // Extra profile fields (email/phone) will be filled lazily
+                            userEmail: null,
+                            userPhone: null
+                        }));
+                        renderConversations(conversations);
+                    }
+                } else {
+                    console.error('Failed to load conversations');
+                }
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+            }
+        }
+
+        // Load a specific conversation with messages
+        async function loadConversation(conversationId) {
+            try {
+                const response = await fetch(`http://localhost:8080/api/auth/messages/conversations/${conversationId}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        const conv = data.conversation;
+                        const conversation = {
+                            conversationId: conv.conversationId,
+                            id: conv.conversationId,
+                            userId: conv.otherUserId,
+                            userName: conv.otherUserName,
+                            userAvatar: conv.otherUserAvatar,
+                            itemName: conv.itemName,
+                            itemId: conv.itemId,
+                            lastMessage: conv.lastMessage || '',
+                            lastMessageTime: formatTime(conv.lastMessageAt),
+                            unreadCount: conv.unreadCount || 0,
+                            messages: conv.messages.map(msg => ({
+                                messageId: msg.messageId,
+                                senderId: msg.senderId,
+                                senderName: msg.senderName,
+                                text: msg.messageText,
+                                timestamp: msg.createdAt,
+                                isRead: msg.isRead
+                            })),
+                            userEmail: null,
+                            userPhone: null
+                        };
+                        
+                        // Update or add conversation
+                        const index = conversations.findIndex(c => c.conversationId === conversationId);
+                        if (index >= 0) {
+                            // Preserve any extra fields (like userEmail/userPhone) if already loaded
+                            const existing = conversations[index];
+                            conversations[index] = {
+                                ...conversation,
+                                userEmail: existing.userEmail ?? conversation.userEmail,
+                                userPhone: existing.userPhone ?? conversation.userPhone
+                            };
+                            return conversations[index];
+                        } else {
+                            conversations.push(conversation);
+                            return conversation;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+            }
+            return null;
+        }
+
+        // Mark messages as read
+        async function markMessagesAsRead(conversationId) {
+            try {
+                await fetch(`http://localhost:8080/api/auth/messages/conversations/${conversationId}/read`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (error) {
+                console.error('Error marking messages as read:', error);
+            }
+        }
+
+        // Format time for display
+        function formatTime(dateTimeString) {
+            if (!dateTimeString) return '';
+            const date = new Date(dateTimeString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Sample conversations data - Replace with actual API call
+        const conversations_backup = [
+            {
+                id: 1,
+                userId: 101,
+                userName: "Sarah Smith",
+                userAvatar: "https://ui-avatars.com/api/?name=Sarah+Smith&background=000000&color=ffffff&size=128",
+                itemName: "Lost iPhone 13",
+                itemId: 2,
+                lastMessage: "Hi! I think I found your iPhone. Can we meet?",
+                lastMessageTime: "2 hours ago",
+                unreadCount: 2,
+                messages: [
+                    {
+                        id: 1,
+                        senderId: 101,
+                        senderName: "Sarah Smith",
+                        text: "Hi! I think I found your iPhone. Can we meet?",
+                        timestamp: "2024-01-15T10:30:00",
+                        isRead: false
+                    },
+                    {
+                        id: 2,
+                        senderId: 101,
+                        senderName: "Sarah Smith",
+                        text: "It has a black case with a sticker on it.",
+                        timestamp: "2024-01-15T10:32:00",
+                        isRead: false
+                    }
+                ]
+            },
+            {
+                id: 2,
+                userId: 102,
+                userName: "Mike Johnson",
+                userAvatar: "https://ui-avatars.com/api/?name=Mike+Johnson&background=000000&color=ffffff&size=128",
+                itemName: "Found Blue Backpack",
+                itemId: 3,
+                lastMessage: "Thank you so much! I'll be there at 3pm.",
+                lastMessageTime: "1 day ago",
+                unreadCount: 0,
+                messages: [
+                    {
+                        id: 3,
+                        senderId: 0, // Current user
+                        senderName: "You",
+                        text: "Hi, I found a blue backpack. Is it yours?",
+                        timestamp: "2024-01-14T14:00:00",
+                        isRead: true
+                    },
+                    {
+                        id: 4,
+                        senderId: 102,
+                        senderName: "Mike Johnson",
+                        text: "Yes! That's mine! Where can I pick it up?",
+                        timestamp: "2024-01-14T14:15:00",
+                        isRead: true
+                    },
+                    {
+                        id: 5,
+                        senderId: 0,
+                        senderName: "You",
+                        text: "I'm at the University Campus, Main Building. You can come anytime today.",
+                        timestamp: "2024-01-14T14:20:00",
+                        isRead: true
+                    },
+                    {
+                        id: 6,
+                        senderId: 102,
+                        senderName: "Mike Johnson",
+                        text: "Thank you so much! I'll be there at 3pm.",
+                        timestamp: "2024-01-14T15:00:00",
+                        isRead: true
+                    }
+                ]
+            },
+            {
+                id: 3,
+                userId: 103,
+                userName: "Emily Chen",
+                userAvatar: "https://ui-avatars.com/api/?name=Emily+Chen&background=000000&color=ffffff&size=128",
+                itemName: "Lost Car Keys",
+                itemId: 4,
+                lastMessage: "I'll check the lost and found office.",
+                lastMessageTime: "3 days ago",
+                unreadCount: 0,
+                messages: [
+                    {
+                        id: 7,
+                        senderId: 103,
+                        senderName: "Emily Chen",
+                        text: "Hello, I lost my car keys at the shopping mall. Have you seen them?",
+                        timestamp: "2024-01-12T09:00:00",
+                        isRead: true
+                    },
+                    {
+                        id: 8,
+                        senderId: 0,
+                        senderName: "You",
+                        text: "I haven't seen them, but I'll keep an eye out. What do they look like?",
+                        timestamp: "2024-01-12T09:30:00",
+                        isRead: true
+                    },
+                    {
+                        id: 9,
+                        senderId: 103,
+                        senderName: "Emily Chen",
+                        text: "They have a keychain with a small red tag. Thank you for helping!",
+                        timestamp: "2024-01-12T10:00:00",
+                        isRead: true
+                    },
+                    {
+                        id: 10,
+                        senderId: 0,
+                        senderName: "You",
+                        text: "I'll check the lost and found office.",
+                        timestamp: "2024-01-12T10:15:00",
+                        isRead: true
+                    }
+                ]
+            },
+            {
+                id: 4,
+                userId: 104,
+                userName: "David Wilson",
+                userAvatar: "https://ui-avatars.com/api/?name=David+Wilson&background=000000&color=ffffff&size=128",
+                itemName: "Found Sunglasses",
+                itemId: 5,
+                lastMessage: "Perfect! Those are mine. When can I pick them up?",
+                lastMessageTime: "5 days ago",
+                unreadCount: 0,
+                messages: [
+                    {
+                        id: 11,
+                        senderId: 0,
+                        senderName: "You",
+                        text: "Hi! I found a pair of black Ray-Ban sunglasses at the beach.",
+                        timestamp: "2024-01-10T16:00:00",
+                        isRead: true
+                    },
+                    {
+                        id: 12,
+                        senderId: 104,
+                        senderName: "David Wilson",
+                        text: "Perfect! Those are mine. When can I pick them up?",
+                        timestamp: "2024-01-10T16:30:00",
+                        isRead: true
+                    }
+                ]
+            }
+        ];
+
+        // Get current user ID from API
+        async function getCurrentUser() {
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/user/profile', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Backend returns a flat object: { userId, email, ... }
+                    if (data.userId) {
+                        currentUserId = data.userId;
+                        currentUserEmail = data.email;
+                    // Backward compatibility if API ever wraps data as { success, user }
+                    } else if (data.success && data.user) {
+                        currentUserId = data.user.userId;
+                        currentUserEmail = data.user.email;
+                    }
+
+                    console.log('Current user loaded:', {
+                        currentUserId,
+                        currentUserEmail
+                    });
+                } else {
+                    console.warn('Failed to load current user profile, status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error getting current user:', error);
+            }
+        }
+
+        function renderConversationItem(conversation) {
+            const isActive = currentConversationId === conversation.conversationId;
+            const activeClass = isActive ? 'bg-gray-100' : 'hover:bg-gray-50';
+            const unreadBadge = conversation.unreadCount > 0 
+                ? `<span class="bg-black text-white text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">${conversation.unreadCount}</span>`
+                : '';
+
+            return `
+                <div 
+                    onclick="openConversation(${conversation.conversationId})"
+                    class="message-item ${activeClass} p-4 border-b border-gray-100 cursor-pointer transition-colors"
+                >
+                    <div class="flex items-center space-x-3">
+                        <img 
+                            src="${conversation.userAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(conversation.userName) + '&background=000000&color=ffffff&size=128'}" 
+                            alt="${conversation.userName}" 
+                            class="w-12 h-12 rounded-full border-2 border-black object-cover flex-shrink-0"
+                        >
+                        <div class="flex-1 min-w-0 overflow-hidden">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <h4 class="font-semibold text-black truncate text-sm">${conversation.userName}</h4>
+                                <span class="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">${conversation.lastMessageTime}</span>
+                            </div>
+                            <p class="text-xs text-gray-600 truncate mb-1">${conversation.itemName}</p>
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="text-xs text-gray-500 truncate flex-1">${conversation.lastMessage}</p>
+                                ${unreadBadge}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMessage(message) {
+            // Normalize IDs to numbers to avoid equality issues after refresh
+            const senderIdNum = Number(message.senderId);
+            const currentIdNum = Number(currentUserId);
+            const isCurrentUser = !!currentIdNum && senderIdNum === currentIdNum;
+            const alignment = isCurrentUser ? 'justify-end' : 'justify-start';
+            const bgColor = isCurrentUser ? 'bg-black text-white' : 'bg-gray-200 text-black';
+            const time = message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+            return `
+                <div class="chat-message flex ${alignment}">
+                    <div class="max-w-xs md:max-w-md lg:max-w-lg">
+                        ${!isCurrentUser ? `
+                            <div class="text-xs text-gray-500 mb-1 px-2">${message.senderName}</div>
+                        ` : ''}
+                        <div class="${bgColor} rounded-lg px-4 py-2">
+                            <p class="text-sm">${message.text || message.messageText}</p>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1 px-2 ${isCurrentUser ? 'text-right' : ''}">${time}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render the item info card that appears above the first message in the chat
+        function renderChatItemCard(conversation) {
+            if (!conversation) return '';
+
+            const itemName = conversation.itemName || '';
+            const description = conversation.itemDescription || '';
+            const imageUrl = conversation.itemImage || null;
+
+            // If we have no useful info, don't render a card
+            if (!itemName && !description && !imageUrl) {
+                return '';
+            }
+
+            const safeDescription = description || 'No description provided for this item.';
+
+            const imageSection = imageUrl
+                ? `
+                    <img 
+                        src="${imageUrl}" 
+                        alt="${itemName || 'Item'}"
+                        class="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-gray-200 object-cover flex-shrink-0"
+                    >
+                `
+                : `
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-gray-200 bg-gray-200 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                `;
+
+            return `
+                <div class="chat-item-card mb-4">
+                    <div class="flex items-start space-x-3 bg-white border border-gray-200 rounded-lg shadow-sm p-3">
+                        ${imageSection}
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[10px] uppercase tracking-wide text-gray-500 mb-0.5">Item</p>
+                            <h4 class="font-semibold text-sm text-black truncate mb-1">${itemName}</h4>
+                            <p class="text-xs text-gray-600 line-clamp-3">${safeDescription}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderConversations(conversationsList) {
+            const container = document.getElementById('conversationsList');
+            if (conversationsList.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-gray-500">
+                        <p>No conversations found</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = conversationsList.map(conv => renderConversationItem(conv)).join('');
+            }
+        }
+
+        // Load public profile details (email/phone, item info) for the conversation's other user
+        async function ensureConversationProfile(conversation) {
+            if (!conversation || !conversation.userId) return conversation;
+
+            // If already loaded, skip
+            if (conversation.userEmail || conversation.userPhone || conversation.itemDescription || conversation.itemImage) {
+                return conversation;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/auth/user/profile/${conversation.userId}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    conversation.userEmail = data.email || null;
+                    conversation.userPhone = data.contactNumber || null;
+
+                    // Try to find this specific item in the user's active items list
+                    if (Array.isArray(data.items)) {
+                        const targetItemId = Number(conversation.itemId);
+                        const matchedItem = data.items.find(it => Number(it.itemId) === targetItemId);
+                        if (matchedItem) {
+                            conversation.itemDescription = matchedItem.description || null;
+                            // Use first image if available
+                            if (Array.isArray(matchedItem.images) && matchedItem.images.length > 0) {
+                                conversation.itemImage = matchedItem.images[0];
+                            } else {
+                                conversation.itemImage = null;
+                            }
+                        }
+                    }
+                } else {
+                    console.warn('Failed to load public profile for userId', conversation.userId, 'status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading public profile for conversation user:', error);
+            }
+
+            // Fallback: if we still don't have item description/image, try search API by itemId
+            if ((!conversation.itemDescription && !conversation.itemImage) && conversation.itemId) {
+                try {
+                    const searchResponse = await fetch('http://localhost:8080/api/auth/search-engine/search?q=', {
+                        method: 'GET',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (searchResponse.ok) {
+                        const searchData = await searchResponse.json();
+                        const targetItemId = Number(conversation.itemId);
+                        const item = Array.isArray(searchData.results)
+                            ? searchData.results.find(i => Number(i.id) === targetItemId)
+                            : null;
+
+                        if (item) {
+                            conversation.itemDescription = conversation.itemDescription || item.description || null;
+                            if (!conversation.itemImage && Array.isArray(item.images) && item.images.length > 0) {
+                                conversation.itemImage = item.images[0];
+                            }
+                        }
+                    } else {
+                        console.warn('Fallback search for item details failed, status:', searchResponse.status);
+                    }
+                } catch (searchError) {
+                    console.error('Error during fallback item search:', searchError);
+                }
+            }
+
+            return conversation;
+        }
+
+        // Smoothly scroll the chat messages container to the bottom
+        function scrollChatToBottom() {
+            const messagesContainer = document.getElementById('chatMessages');
+            if (!messagesContainer) return;
+
+            // Defer until after DOM paint to ensure correct scrollHeight
+            requestAnimationFrame(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+        }
+
+        // Render all messages for the active conversation, including the item card at the top
+        function renderConversationMessages(conversation) {
+            const messagesContainer = document.getElementById('chatMessages');
+            if (!messagesContainer || !conversation) return;
+
+            let html = '';
+
+            // Item info card goes above the first message
+            html += renderChatItemCard(conversation);
+
+            // Then all chat messages
+            html += (conversation.messages || []).map(msg => renderMessage(msg)).join('');
+
+            messagesContainer.innerHTML = html;
+            scrollChatToBottom();
+        }
+
+        // Open the other user's public profile page from the chat header
+        function openChatUserProfile() {
+            if (!currentConversationId) return;
+            const conversation = conversations.find(c => c.conversationId === currentConversationId);
+            if (!conversation || !conversation.userId) return;
+
+            // Navigate to the public profile view for this user
+            window.location.href = `ViewUserProfilePage.html?userId=${conversation.userId}`;
+        }
+
+        async function openConversation(conversationId) {
+            currentConversationId = conversationId;
+            
+            // Load conversation from API if not already loaded
+            let conversation = conversations.find(c => c.conversationId === conversationId);
+            if (!conversation || !conversation.messages || conversation.messages.length === 0) {
+                conversation = await loadConversation(conversationId);
+                if (!conversation) {
+                    console.error('Failed to load conversation');
+                    return;
+                }
+            }
+
+            // Ensure we have public profile details (email/phone) for header display
+            await ensureConversationProfile(conversation);
+
+            // Update chat header
+            document.getElementById('chatAvatar').src = conversation.userAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(conversation.userName) + '&background=000000&color=ffffff&size=128';
+            document.getElementById('chatUserName').textContent = conversation.userName;
+            document.getElementById('chatItemName').textContent = conversation.itemName;
+
+            const emailEl = document.getElementById('chatUserEmail');
+            const phoneEl = document.getElementById('chatUserPhone');
+
+            if (conversation.userEmail) {
+                emailEl.textContent = conversation.userEmail;
+                emailEl.classList.remove('hidden');
+            } else {
+                emailEl.textContent = '';
+                emailEl.classList.add('hidden');
+            }
+
+            if (conversation.userPhone) {
+                phoneEl.textContent = conversation.userPhone;
+                phoneEl.classList.remove('hidden');
+            } else {
+                phoneEl.textContent = '';
+                phoneEl.classList.add('hidden');
+            }
+
+            // Render messages + item card
+            renderConversationMessages(conversation);
+
+            // Show chat area, hide empty state
+            const chatArea = document.getElementById('chatArea');
+            const emptyState = document.getElementById('emptyChatState');
+            
+            // Show chat area - remove hidden, add flex for mobile, ensure md:flex is there
+            chatArea.classList.remove('hidden');
+            chatArea.style.display = 'flex';
+            
+            // Hide empty state - add hidden, remove display
+            emptyState.classList.add('hidden');
+            emptyState.style.display = 'none';
+
+            // Mark messages as read
+            conversation.unreadCount = 0;
+            markMessagesAsRead(conversationId);
+
+            // Re-render conversations to update unread count
+            renderConversations(conversations);
+
+            // Focus message input
+            document.getElementById('messageInput').focus();
+        }
+
+        function sendMessage(event) {
+            event.preventDefault();
+            if (!currentConversationId || !stompClient || !stompClient.connected) {
+                console.error('WebSocket not connected. Current state:', {
+                    currentConversationId,
+                    stompClient: !!stompClient,
+                    connected: stompClient?.connected
+                });
+                toastError('WebSocket not connected. Please refresh the page.');
+                return;
+            }
+
+            const input = document.getElementById('messageInput');
+            const messageText = input.value.trim();
+            if (!messageText) return;
+
+            // Send message via STOMP
+            const messageRequest = {
+                conversationId: currentConversationId,
+                messageText: messageText
+            };
+
+            console.log('Sending message via WebSocket:', messageRequest);
+            stompClient.send('/app/message.send', {}, JSON.stringify(messageRequest));
+
+            // Optimistically add message to UI (will be confirmed via WebSocket)
+            const conversation = conversations.find(c => c.conversationId === currentConversationId);
+            if (conversation) {
+                const newMessage = {
+                    messageId: Date.now(), // Temporary ID
+                    senderId: currentUserId,
+                    senderName: "You",
+                    text: messageText,
+                    timestamp: new Date().toISOString(),
+                    isRead: true
+                };
+
+                conversation.messages.push(newMessage);
+                conversation.lastMessage = messageText;
+                conversation.lastMessageTime = "Just now";
+
+                // Render message
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.innerHTML += renderMessage(newMessage);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                // Update conversation list
+                renderConversations(conversations);
+            }
+
+            // Clear input
+            input.value = '';
+        }
+
+        function filterConversations() {
+            const searchTerm = document.getElementById('conversationSearch').value.toLowerCase();
+            const filtered = conversations.filter(conv => 
+                conv.userName.toLowerCase().includes(searchTerm) ||
+                conv.itemName.toLowerCase().includes(searchTerm) ||
+                conv.lastMessage.toLowerCase().includes(searchTerm)
+            );
+            renderConversations(filtered);
+        }
+
+        function closeChat() {
+            const chatArea = document.getElementById('chatArea');
+            const emptyState = document.getElementById('emptyChatState');
+            
+            // Hide chat area
+            chatArea.classList.add('hidden');
+            chatArea.style.display = 'none';
+            
+            // Show empty state - remove hidden, restore responsive display
+            emptyState.classList.remove('hidden');
+            emptyState.style.display = ''; // Let CSS handle it via md:flex
+            currentConversationId = null;
+        }
+
+        // Disconnect WebSocket on page unload
+        window.addEventListener('beforeunload', () => {
+            if (stompClient && stompClient.connected) {
+                stompClient.disconnect();
+            }
+        });
+
+        // Create or get conversation for a user
+        async function createOrGetConversation(receiverAccountId, itemId) {
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/messages/conversations/create', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        receiverAccountId: receiverAccountId,
+                        itemId: itemId
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.conversation) {
+                        const conv = data.conversation;
+                        const conversation = {
+                            conversationId: conv.conversationId,
+                            id: conv.conversationId,
+                            userId: conv.otherUserId,
+                            userName: conv.otherUserName,
+                            userAvatar: conv.otherUserAvatar,
+                            itemName: conv.itemName,
+                            itemId: conv.itemId,
+                            lastMessage: conv.lastMessage || '',
+                            lastMessageTime: formatTime(conv.lastMessageAt),
+                            unreadCount: conv.unreadCount || 0,
+                            messages: (conv.messages || []).map(msg => ({
+                                messageId: msg.messageId,
+                                senderId: msg.senderId,
+                                senderName: msg.senderName,
+                                text: msg.messageText,
+                                timestamp: msg.createdAt,
+                                isRead: msg.isRead
+                            }))
+                        };
+                        
+                        // Add or update conversation in list
+                        const index = conversations.findIndex(c => c.conversationId === conversation.conversationId);
+                        if (index >= 0) {
+                            conversations[index] = conversation;
+                        } else {
+                            conversations.push(conversation);
+                        }
+                        
+                        // Open the conversation
+                        await openConversation(conversation.conversationId);
+                        return true;
+                    }
+                } else {
+                    const errorData = await response.json();
+                    console.error('Failed to create conversation:', errorData.message);
+                    toastError('Failed to start conversation: ' + (errorData.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error creating conversation:', error);
+                toastError('Error creating conversation. Please try again.');
+            }
+            return false;
+        }
+
+        // Show item selection modal when messaging from profile
+        let selectedUserIdForItemSelection = null;
+        
+        async function showItemSelectionModal(userId) {
+            selectedUserIdForItemSelection = userId;
+            
+            try {
+                // First check if there's an existing conversation
+                await loadConversations();
+                const existingConv = conversations.find(c => c.userId === userId);
+                if (existingConv) {
+                    // Open existing conversation instead
+                    await openConversation(existingConv.conversationId);
+                    return;
+                }
+                
+                // Show modal first with loading state
+                document.getElementById('itemSelectionModal').classList.remove('hidden');
+                const itemsList = document.getElementById('itemSelectionList');
+                itemsList.innerHTML = '<div class="text-center py-8"><p class="text-gray-600">Loading items...</p></div>';
+                
+                // Get user profile with items
+                const response = await fetch(`http://localhost:8080/api/auth/user/profile/${userId}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    console.log('User profile data:', userData); // Debug log
+                    const items = userData.items || [];
+                    console.log('Items found:', items.length, items); // Debug log
+                    
+                    if (items.length === 0) {
+                        // Show message in modal instead of toast
+                        itemsList.innerHTML = `
+                            <div class="text-center py-8">
+                                <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                </svg>
+                                <p class="text-gray-600 mb-2 font-medium">This user has no items to message about.</p>
+                                <p class="text-sm text-gray-500">They need to report an item first.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Render items in modal
+                    console.log('Rendering items in modal'); // Debug log
+                    itemsList.innerHTML = items.map(item => `
+                        <div 
+                            onclick="selectItemForConversation(${item.itemId}, '${item.itemName.replace(/'/g, "\\'")}')"
+                            class="border-2 border-gray-200 rounded-lg p-4 mb-4 cursor-pointer hover:border-black transition-colors"
+                        >
+                            <div class="flex items-start space-x-4">
+                                ${item.images && item.images.length > 0 ? `
+                                    <img 
+                                        src="${item.images[0]}" 
+                                        alt="${item.itemName}"
+                                        class="w-20 h-20 object-cover rounded-lg border-2 border-gray-200 flex-shrink-0"
+                                    >
+                                ` : `
+                                    <div class="w-20 h-20 bg-gray-200 rounded-lg border-2 border-gray-200 flex-shrink-0 flex items-center justify-center">
+                                        <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                `}
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-black mb-1">${item.itemName}</h4>
+                                    <p class="text-sm text-gray-600 line-clamp-2 mb-2">${item.description || 'No description'}</p>
+                                    <div class="flex items-center space-x-2 text-xs text-gray-500">
+                                        <span class="px-2 py-0.5 rounded ${item.itemType === 'lost' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                                            ${item.itemType === 'lost' ? 'Lost' : 'Found'}
+                                        </span>
+                                        <span>📍 ${item.location}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    console.log('Items rendered in modal'); // Debug log
+                } else {
+                    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                    console.error('Failed to load user profile:', response.status, errorData);
+                    const itemsList = document.getElementById('itemSelectionList');
+                    itemsList.innerHTML = `
+                        <div class="text-center py-8">
+                            <p class="text-red-600 mb-2">Unable to load user items.</p>
+                            <p class="text-sm text-gray-500">${errorData.message || 'Please try again.'}</p>
+                        </div>
+                    `;
+                    document.getElementById('itemSelectionModal').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading user items:', error);
+                const itemsList = document.getElementById('itemSelectionList');
+                itemsList.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-red-600 mb-2">Error loading user items.</p>
+                        <p class="text-sm text-gray-500">${error.message || 'Please try again.'}</p>
+                    </div>
+                `;
+                document.getElementById('itemSelectionModal').classList.remove('hidden');
+                toastError('Error loading user items. Please try again.');
+            }
+        }
+        
+        function closeItemSelectionModal() {
+            document.getElementById('itemSelectionModal').classList.add('hidden');
+            selectedUserIdForItemSelection = null;
+        }
+        
+        async function selectItemForConversation(itemId, itemName) {
+            if (!selectedUserIdForItemSelection) return;
+            
+            closeItemSelectionModal();
+            
+            try {
+                // Get user profile to get accountId
+                const response = await fetch(`http://localhost:8080/api/auth/user/profile/${selectedUserIdForItemSelection}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    const receiverAccountId = userData.accountId;
+                    
+                    if (receiverAccountId) {
+                        await createOrGetConversation(receiverAccountId, itemId);
+                    } else {
+                        toastError('Unable to get user account information. Please try again.');
+                    }
+                } else {
+                    toastError('Unable to load user profile. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error creating conversation:', error);
+                toastError('Error starting conversation. Please try again.');
+            }
+        }
+
+        // Handle URL parameters to open/create conversation
+        async function handleUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('userId');
+            const itemId = urlParams.get('itemId');
+            
+            if (itemId && !userId) {
+                // Only itemId provided - need to get userId from item
+                // This happens when coming from SearchResultsPage without userId
+                try {
+                    // Get item details to find owner
+                    const searchResponse = await fetch(`http://localhost:8080/api/auth/search-engine/search?q=`, {
+                        method: 'GET',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (searchResponse.ok) {
+                        const searchData = await searchResponse.json();
+                        const item = searchData.results.find(i => i.id === parseInt(itemId));
+                        
+                        if (item && item.userId) {
+                            // Now we have userId, proceed with conversation creation
+                            const targetUserId = item.userId;
+                            const response = await fetch(`http://localhost:8080/api/auth/user/profile/${targetUserId}`, {
+                                method: 'GET',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            
+                            if (response.ok) {
+                                const userData = await response.json();
+                                const receiverAccountId = userData.accountId;
+                                
+                                if (receiverAccountId) {
+                                    await createOrGetConversation(receiverAccountId, parseInt(itemId));
+                                } else {
+                                    toastError('Unable to get user account information. Please try again.');
+                                }
+                            } else {
+                                toastError('Unable to load user profile. Please try again.');
+                            }
+                        } else {
+                            toastError('Unable to find item owner. Please try again.');
+                        }
+                    } else {
+                        toastError('Unable to load item information. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error getting item owner:', error);
+                    toastError('Error loading item information. Please try again.');
+                }
+                
+                // Clean up URL parameters
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return;
+            }
+            
+            if (userId) {
+                const targetUserId = parseInt(userId);
+                
+                if (itemId) {
+                    // Both userId and itemId provided - get accountId from user profile and create conversation
+                    try {
+                        const response = await fetch(`http://localhost:8080/api/auth/user/profile/${targetUserId}`, {
+                            method: 'GET',
+                            credentials: 'include',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const userData = await response.json();
+                            const receiverAccountId = userData.accountId;
+                            
+                            if (receiverAccountId) {
+                                const itemIdNum = parseInt(itemId);
+                                await createOrGetConversation(receiverAccountId, itemIdNum);
+                            } else {
+                                toastError('Unable to get user account information. Please try again.');
+                            }
+                        } else {
+                            toastError('Unable to load user profile. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Error getting user profile:', error);
+                        toastError('Error loading user information. Please try again.');
+                    }
+                } else {
+                    // Only userId provided - show item selection modal
+                    await showItemSelectionModal(targetUserId);
+                }
+                
+                // Clean up URL parameters
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Get current user info
+            await getCurrentUser();
+            
+            // Load conversations
+            await loadConversations();
+            
+            // Connect to WebSocket
+            connectWebSocket();
+            
+            // Handle URL parameters (userId, itemId) to open/create conversation
+            await handleUrlParameters();
+            
+            // Ensure chat area is hidden by default (no conversation selected)
+            // Only if no URL parameters were processed
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.get('userId')) {
+                const chatArea = document.getElementById('chatArea');
+                chatArea.classList.add('hidden');
+                chatArea.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+

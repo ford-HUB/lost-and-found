@@ -8,4 +8,5 @@ import com.backend.server.models.Role;
 
 public interface RoleRepository extends JpaRepository<Role, Long> {
     Optional<Role> findByRoleName(String role_name);
+    Optional<Role> findByAccount_AccountId(Long accountId);
 }

@@ -1,5 +1,7 @@
 package com.backend.server.models;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -9,7 +11,8 @@ public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long account_id;
+    @Column(name = "account_id")
+    private Long accountId;
 
     @Column(
         unique = true,
@@ -23,21 +26,35 @@ public class Account {
     )
     private String password;
 
+    @Column(
+        name = "created_at",
+        nullable = false,
+        updatable = false
+    )
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
     public Account() {} // initialize the contructor
 
     public Account(Long accountId, String email, String password) {
-        this.account_id = accountId;
+        this.accountId = accountId;
         this.email = email;
         this.password = password;
     }
 
     // @getters
-    public Long getAccountId() { return account_id; }
+    public Long getAccountId() { return accountId; }
     public String getEmail() { return email; }
     public String getPassword() { return password; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
     // @setters
-    public void setAccountId(Long account_id) { this.account_id = account_id; }
+    public void setAccountId(Long accountId) { this.accountId = accountId; }
     public void setEmail(String email) { this.email = email; }
     public void setPassword(String password) { this.password = password; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

@@ -1,10 +1,8 @@
 package com.backend.server.services;
 
+import java.util.Optional;
+
 import org.elasticsearch.ResourceAlreadyExistsException;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -49,22 +47,30 @@ public class AuthService {
         
     }
 
+    @Transactional
     public Role registerRole(Role payload) {
-        return roleRepository.findByRoleName(payload.getRoleName())
-        .orElseGet(() -> {
-            Role role = new Role();
-            role.setRoleName(payload.getRoleName());
-            role.setDescription(payload.getDescription());
-            return roleRepository.save(role);
-        });
+        Role role = new Role();
+        role.setRoleName(payload.getRoleName());
+        role.setDescription(payload.getDescription());
+
+        Account account = accountRepository.findById(payload.getAccount().getAccountId())
+        .orElseThrow(() -> new RuntimeException("Account not found"));
         
+        role.setAccount(account);
+        return roleRepository.save(role);
     }
 
+    @Transactional
     public User registerUserInfo(User payload) {
         User user = new User();
         user.setFullname(payload.getFullname());
         user.setContactNumber(payload.getContactNumber());
         user.setAddress(payload.getAddress());
+
+        Account account = accountRepository.findById(payload.getAccount().getAccountId())
+        .orElseThrow(() -> new RuntimeException("Account not found"));
+        user.setAccount(account);
+
         return userRepository.save(user);
     }
 

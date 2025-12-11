@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost & Found Registry - Search</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Authentication Checker - Protects this page -->
+    <script src="../../js/auth-checker.js"></script>
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .animate-delay-1 {
+            animation-delay: 0.1s;
+            opacity: 0;
+        }
+        
+        .animate-delay-2 {
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+        
+        .animate-delay-3 {
+            animation-delay: 0.3s;
+            opacity: 0;
+        }
+        
+        .search-bar:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col">
+    <!-- Header Navigation -->
+    <header class="w-full py-4 px-6 animate-fade-in-up">
+        <nav class="flex justify-between items-center max-w-7xl mx-auto">
+            <div class="text-xl font-semibold text-black">Lost & Found</div>
+            <div class="flex items-center space-x-6">
+                <a href="MyItemsPage.html" class="text-black hover:text-gray-600 transition-colors">My Items</a>
+                <a href="ReportItemPage.html" class="text-black hover:text-gray-600 transition-colors">Report Item</a>
+                <a href="MessagesPage.html" class="text-black hover:text-gray-600 transition-colors">Messages</a>
+                <a href="ProfilePage.html" class="text-black hover:text-gray-600 transition-colors">Profile</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content - Centered Search -->
+    <main class="flex-1 flex flex-col items-center justify-center px-4">
+        <!-- Logo/Title -->
+        <div class="mb-12 animate-fade-in-up animate-delay-1">
+            <h1 class="text-5xl font-light text-black tracking-tight">Lost & Found Registry</h1>
+        </div>
+
+        <!-- Search Bar Container -->
+        <div class="w-full max-w-2xl animate-fade-in-up animate-delay-2">
+            <form id="searchForm" class="relative" onsubmit="handleSearch(event)">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="searchInput"
+                        name="query" 
+                        placeholder="Search for lost or found items..." 
+                        class="w-full px-6 py-4 pl-14 pr-24 text-lg border-2 border-black rounded-full focus:border-black transition-all search-bar bg-white text-black placeholder-gray-500"
+                        autocomplete="off"
+                    >
+                    <!-- Search Icon -->
+                    <svg class="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <!-- Search Button -->
+                    <button 
+                        type="submit"
+                        onclick="handleSearch(event)" 
+                        class="absolute right-5 top-1/2 transform -translate-y-1/2 p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors flex items-center justify-center"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <!-- Search Hints Dropdown -->
+                    <div id="hintsDropdown" class="hidden absolute top-full left-0 right-0 mt-2 bg-white bg-gray-100  rounded-lg shadow-lg z-100 max-h-64 overflow-y-auto">
+                        <!-- Hints will be dynamically inserted here -->
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="mt-16 text-center text-sm text-gray-500 animate-fade-in-up animate-delay-3">
+            <p>Find what you've lost or help others find their belongings</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-4 px-6 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto flex justify-between items-center text-sm text-gray-600">
+            <div class="flex space-x-6">
+                <a href="#" class="hover:text-black transition-colors">About</a>
+                <a href="#" class="hover:text-black transition-colors">Privacy</a>
+                <a href="#" class="hover:text-black transition-colors">Terms</a>
+            </div>
+            <div class="text-gray-500">
+                © 2024 Lost & Found Registry
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let hintsTimeout = null;
+
+        function handleSearch(event) {
+            event.preventDefault();
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.trim();
+            
+            // Hide hints dropdown
+            document.getElementById('hintsDropdown').classList.add('hidden');
+            
+            // Redirect to results page with search query (even if empty, show all items)
+            window.location.href = 'SearchResultsPage.html?q=' + encodeURIComponent(query);
+        }
+
+        function loadSearchHints(query) {
+            // Clear previous timeout
+            if (hintsTimeout) {
+                clearTimeout(hintsTimeout);
+            }
+            
+            // If query is empty, hide hints
+            if (!query || query.trim().length === 0) {
+                document.getElementById('hintsDropdown').classList.add('hidden');
+                return;
+            }
+            
+            // Debounce API calls
+            hintsTimeout = setTimeout(() => {
+                const apiUrl = `/api/auth/search-engine/search/hints?q=${encodeURIComponent(query.trim())}`;
+                
+                fetch(apiUrl, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => {
+                    if (res.status === 401 || res.status === 403) {
+                        return null;
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data && data.hints && data.hints.length > 0) {
+                        displayHints(data.hints);
+                    } else {
+                        document.getElementById('hintsDropdown').classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching hints:', error);
+                    document.getElementById('hintsDropdown').classList.add('hidden');
+                });
+            }, 300); // 300ms debounce
+        }
+
+        function displayHints(hints) {
+            const dropdown = document.getElementById('hintsDropdown');
+            dropdown.innerHTML = '';
+            
+            hints.forEach(hint => {
+                const hintElement = document.createElement('div');
+                hintElement.className = 'px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-200 last:border-b-0';
+                hintElement.textContent = hint;
+                hintElement.onclick = () => {
+                    document.getElementById('searchInput').value = hint;
+                    handleSearch(new Event('submit'));
+                };
+                dropdown.appendChild(hintElement);
+            });
+            
+            dropdown.classList.remove('hidden');
+        }
+
+        // Initialize search input event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            
+            // Load hints as user types
+            searchInput.addEventListener('input', function(e) {
+                loadSearchHints(e.target.value);
+            });
+            
+            // Hide hints when clicking outside
+            document.addEventListener('click', function(e) {
+                const dropdown = document.getElementById('hintsDropdown');
+                const searchContainer = document.getElementById('searchForm');
+                if (!searchContainer.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+            
+            // Allow Enter key to submit
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleSearch(e);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

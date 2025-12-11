@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Lost & Found Registry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Authentication Checker - Protects this page -->
+    <script src="../../js/auth-checker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../js/toaster.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .profile-section {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .stat-card {
+            transition: transform 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header Navigation -->
+    <header class="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <nav class="flex justify-between items-center max-w-7xl mx-auto px-4 py-3">
+            <a href="SearchEnginePage.html" class="text-xl font-semibold text-black">Lost & Found</a>
+            <div class="flex items-center space-x-6">
+                <a href="MyItemsPage.html" class="text-black hover:text-gray-600 transition-colors">My Items</a>
+                <a href="ReportItemPage.html" class="text-black hover:text-gray-600 transition-colors">Report Item</a>
+                <a href="MessagesPage.html" class="text-black hover:text-gray-600 transition-colors">Messages</a>
+                <a href="ProfilePage.html" class="text-black font-medium border-b-2 border-black">Profile</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Profile Header -->
+        <div class="profile-section bg-white rounded-lg border border-gray-200 shadow-sm p-6 md:p-8 mb-6">
+            <div class="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+                <!-- Avatar -->
+                <div class="relative">
+                    <img 
+                        src="https://ui-avatars.com/api/?name=John+Doe&background=000000&color=ffffff&size=200" 
+                        alt="Profile Picture" 
+                        class="w-32 h-32 rounded-full border-4 border-black object-cover"
+                        id="profileAvatar"
+                    >
+                    <button 
+                        onclick="document.getElementById('avatarInput').click()"
+                        class="absolute bottom-0 right-0 bg-black text-white rounded-full p-2 hover:bg-gray-800 transition-colors"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </button>
+                    <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="handleAvatarChange(event)">
+                </div>
+
+                <!-- Profile Info -->
+                <div class="flex-1 text-center md:text-left">
+                    <h1 class="text-3xl font-semibold text-black mb-2" id="profileName">John Doe</h1>
+                    <p class="text-gray-600 mb-4" id="profileEmail">john.doe@example.com</p>
+                    <p class="text-sm text-gray-500 mb-4" id="memberSince">Member since</p>
+                    <button 
+                        onclick="toggleEditMode()"
+                        class="px-6 py-2 border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-all font-medium"
+                    >
+                        Edit Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="profile-section grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card bg-white rounded-lg border border-gray-200 shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-black mb-2" id="totalItems">0</div>
+                <div class="text-sm text-gray-600">Total Items</div>
+            </div>
+            <div class="stat-card bg-white rounded-lg border border-gray-200 shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-black mb-2" id="resolvedItems">0</div>
+                <div class="text-sm text-gray-600">Resolved</div>
+            </div>
+            <div class="stat-card bg-white rounded-lg border border-gray-200 shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-black mb-2" id="activeItems">0</div>
+                <div class="text-sm text-gray-600">Active</div>
+            </div>
+            <div class="stat-card bg-white rounded-lg border border-gray-200 shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-black mb-2" id="helpfulCount">0</div>
+                <div class="text-sm text-gray-600">Helpful</div>
+            </div>
+        </div>
+
+        <!-- Profile Details -->
+        <div class="profile-section bg-white rounded-lg border border-gray-200 shadow-sm p-6 md:p-8 mb-6">
+            <h2 class="text-2xl font-semibold text-black mb-6">Profile Information</h2>
+            
+            <form id="profileForm" onsubmit="handleProfileUpdate(event)" class="space-y-6">
+                <!-- Name -->
+                <div>
+                    <label for="name" class="block text-sm font-semibold text-black mb-2">Full Name</label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        name="name" 
+                        value="John Doe"
+                        disabled
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors disabled:bg-gray-50"
+                    >
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="email" class="block text-sm font-semibold text-black mb-2">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        value="john.doe@example.com"
+                        disabled
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors disabled:bg-gray-50"
+                    >
+                </div>
+
+                <!-- Phone -->
+                <div>
+                    <label for="phone" class="block text-sm font-semibold text-black mb-2">Phone Number</label>
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        name="phone" 
+                        value="+1 (555) 123-4567"
+                        disabled
+                        placeholder="Enter your phone number"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors disabled:bg-gray-50"
+                    >
+                </div>
+
+                <!-- Bio -->
+                <div>
+                    <label for="bio" class="block text-sm font-semibold text-black mb-2">Bio</label>
+                    <textarea 
+                        id="bio" 
+                        name="bio" 
+                        rows="4"
+                        disabled
+                        placeholder="Tell us about yourself..."
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors resize-none disabled:bg-gray-50"
+                    >Helping others find their lost items and reuniting them with their belongings.</textarea>
+                </div>
+
+                <!-- Location -->
+                <div>
+                    <label for="location" class="block text-sm font-semibold text-black mb-2">Location</label>
+                    <input 
+                        type="text" 
+                        id="location" 
+                        name="location" 
+                        value="New York, NY"
+                        disabled
+                        placeholder="City, State/Country"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors disabled:bg-gray-50"
+                    >
+                </div>
+
+                <!-- Save Button (hidden by default) -->
+                <div id="saveButtons" class="hidden flex space-x-4 pt-4 border-t border-gray-200">
+                    <button 
+                        type="submit"
+                        class="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-semibold"
+                    >
+                        Save Changes
+                    </button>
+                    <button 
+                        type="button"
+                        onclick="cancelEdit()"
+                        class="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-black hover:text-black transition-colors font-semibold"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="profile-section bg-white rounded-lg border border-gray-200 shadow-sm p-6 md:p-8">
+            <h2 class="text-2xl font-semibold text-black mb-6">Account Settings</h2>
+            
+            <div class="space-y-4">
+                <!-- Change Password -->
+                <div class="flex items-center justify-between py-4 border-b border-gray-100">
+                    <div>
+                        <h3 class="font-semibold text-black">Change Password</h3>
+                        <p class="text-sm text-gray-600">Update your account password</p>
+                    </div>
+                    <button 
+                        onclick="changePassword()"
+                        class="px-4 py-2 border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-all font-medium"
+                    >
+                        Change
+                    </button>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div class="flex items-center justify-between py-4 border-b border-gray-100">
+                    <div>
+                        <h3 class="font-semibold text-black">Privacy</h3>
+                        <p class="text-sm text-gray-600">Control your privacy settings</p>
+                    </div>
+                    <button 
+                        onclick="openPrivacySettings()"
+                        class="px-4 py-2 border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-all font-medium"
+                    >
+                        Manage
+                    </button>
+                </div>
+
+                <!-- Delete Account -->
+                <div class="flex items-center justify-between py-4">
+                    <div>
+                        <h3 class="font-semibold text-red-600">Delete Account</h3>
+                        <p class="text-sm text-gray-600">Permanently delete your account</p>
+                    </div>
+                    <button 
+                        onclick="deleteAccount()"
+                        class="px-4 py-2 border-2 border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all font-medium"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Change Password Modal -->
+    <div id="passwordModal" class="hidden fixed inset-0 z-50 overflow-y-auto" onclick="closePasswordModal(event)">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <!-- Modal Backdrop -->
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+            
+            <!-- Modal Content -->
+            <div class="relative bg-white rounded-lg border-2 border-black shadow-xl max-w-md w-full" onclick="event.stopPropagation()">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b-2 border-black">
+                    <h2 class="text-2xl font-semibold text-black">Change Password</h2>
+                    <button 
+                        onclick="closePasswordModal()"
+                        type="button"
+                        class="text-black hover:text-gray-600 transition-colors"
+                    >
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <form id="passwordForm" onsubmit="handlePasswordChange(event)" class="p-6 space-y-4">
+                    <!-- Current Password -->
+                    <div>
+                        <label for="currentPassword" class="block text-sm font-semibold text-black mb-2">Current Password</label>
+                        <input 
+                            type="password" 
+                            id="currentPassword" 
+                            name="currentPassword" 
+                            required
+                            placeholder="Enter your current password"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors"
+                        >
+                    </div>
+
+                    <!-- New Password -->
+                    <div>
+                        <label for="newPassword" class="block text-sm font-semibold text-black mb-2">New Password</label>
+                        <input 
+                            type="password" 
+                            id="newPassword" 
+                            name="newPassword" 
+                            required
+                            minlength="6"
+                            placeholder="Enter your new password (min 6 characters)"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors"
+                        >
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div>
+                        <label for="confirmPassword" class="block text-sm font-semibold text-black mb-2">Confirm New Password</label>
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            name="confirmPassword" 
+                            required
+                            minlength="6"
+                            placeholder="Confirm your new password"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors"
+                        >
+                        <p id="passwordMatchError" class="hidden text-sm text-red-600 mt-1">Passwords do not match</p>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div id="passwordError" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3"></div>
+
+                    <!-- Modal Footer -->
+                    <div class="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+                        <button 
+                            type="button"
+                            onclick="closePasswordModal()"
+                            class="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-black hover:text-black transition-colors font-semibold"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit"
+                            class="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-semibold"
+                        >
+                            Change Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Settings Modal -->
+    <div id="privacyModal" class="hidden fixed inset-0 z-50 overflow-y-auto" onclick="closePrivacyModal(event)">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <!-- Modal Backdrop -->
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+            
+            <!-- Modal Content -->
+            <div class="relative bg-white rounded-lg border-2 border-black shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b-2 border-black">
+                    <h2 class="text-2xl font-semibold text-black">Privacy Settings</h2>
+                    <button 
+                        onclick="closePrivacyModal()"
+                        type="button"
+                        class="text-black hover:text-gray-600 transition-colors"
+                    >
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6 space-y-6">
+                    <!-- Profile Visibility -->
+                    <div>
+                        <h3 class="font-semibold text-black mb-3">Profile Visibility</h3>
+                        <div class="space-y-3">
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="radio" name="profileVisibility" value="public" checked class="w-4 h-4 text-black border-gray-300 focus:ring-black">
+                                <div class="flex-1">
+                                    <span class="font-medium text-black">Public</span>
+                                    <p class="text-sm text-gray-600">Anyone can view your profile and contact you about your items</p>
+                                </div>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="radio" name="profileVisibility" value="items-only" class="w-4 h-4 text-black border-gray-300 focus:ring-black">
+                                <div class="flex-1">
+                                    <span class="font-medium text-black">Items Only</span>
+                                    <p class="text-sm text-gray-600">Show your items publicly but keep your profile information private</p>
+                                </div>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="radio" name="profileVisibility" value="private" class="w-4 h-4 text-black border-gray-300 focus:ring-black">
+                                <div class="flex-1">
+                                    <span class="font-medium text-black">Private</span>
+                                    <p class="text-sm text-gray-600">Hide your profile and items from public view. Only you can see them</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="font-semibold text-black mb-3">Contact Information</h3>
+                        <div class="space-y-3">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <span class="font-medium text-black">Show Email Address</span>
+                                    <p class="text-sm text-gray-600">Allow others to see your email address</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" id="showEmail">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                                </label>
+                            </label>
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <span class="font-medium text-black">Show Phone Number</span>
+                                    <p class="text-sm text-gray-600">Allow others to see your phone number</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" id="showPhone">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                                </label>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Item Visibility -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="font-semibold text-black mb-3">Item Visibility</h3>
+                        <div class="space-y-3">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <span class="font-medium text-black">Show Items in Search</span>
+                                    <p class="text-sm text-gray-600">Allow your items to appear in search results</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer" id="showInSearch">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                                </label>
+                            </label>
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <span class="font-medium text-black">Allow Messages</span>
+                                    <p class="text-sm text-gray-600">Allow others to message you about your items</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer" id="allowMessages">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                                </label>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex items-center justify-end space-x-4 p-6 border-t-2 border-black bg-gray-50">
+                    <button 
+                        onclick="closePrivacyModal()"
+                        class="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-black hover:text-black transition-colors font-semibold"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onclick="savePrivacySettings()"
+                        class="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-semibold"
+                    >
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div id="deleteAccountModal" class="hidden fixed inset-0 z-50 overflow-y-auto" onclick="closeDeleteAccountModal(event)">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <!-- Modal Backdrop -->
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+            
+            <!-- Modal Content -->
+            <div class="relative bg-white rounded-lg border-2 border-red-500 shadow-xl max-w-md w-full" onclick="event.stopPropagation()">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b-2 border-red-500 bg-red-50">
+                    <h2 class="text-2xl font-semibold text-red-600">Delete Account</h2>
+                    <button 
+                        onclick="closeDeleteAccountModal()"
+                        type="button"
+                        class="text-red-600 hover:text-red-800 transition-colors"
+                    >
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <form id="deleteAccountForm" onsubmit="handleDeleteAccount(event)" class="p-6 space-y-4">
+                    <!-- Warning Message -->
+                    <div class="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            <div>
+                                <h3 class="font-semibold text-red-800 mb-2">Warning: This action cannot be undone!</h3>
+                                <p class="text-sm text-red-700">
+                                    Deleting your account will permanently remove:
+                                </p>
+                                <ul class="text-sm text-red-700 mt-2 list-disc list-inside space-y-1">
+                                    <li>Your profile and all personal information</li>
+                                    <li>All your items and their images</li>
+                                    <li>All your conversations and messages</li>
+                                    <li>All your likes and interactions</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Input -->
+                    <div>
+                        <label for="deletePassword" class="block text-sm font-semibold text-black mb-2">
+                            Enter your password to confirm
+                        </label>
+                        <input 
+                            type="password" 
+                            id="deletePassword" 
+                            name="deletePassword" 
+                            required
+                            placeholder="Enter your password"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:outline-none transition-colors"
+                        >
+                    </div>
+
+                    <!-- Confirmation Checkbox -->
+                    <div class="flex items-start space-x-3">
+                        <input 
+                            type="checkbox" 
+                            id="confirmDelete" 
+                            name="confirmDelete" 
+                            required
+                            class="mt-1 w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                        >
+                        <label for="confirmDelete" class="text-sm text-gray-700">
+                            I understand that this action is permanent and cannot be undone. I want to delete my account.
+                        </label>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div id="deleteAccountError" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3"></div>
+
+                    <!-- Modal Footer -->
+                    <div class="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+                        <button 
+                            type="button"
+                            onclick="closeDeleteAccountModal()"
+                            class="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-black hover:text-black transition-colors font-semibold"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit"
+                            class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
+                        >
+                            Delete Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isEditMode = false;
+        let originalValues = {};
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const form = document.getElementById('profileForm');
+            const inputs = form.querySelectorAll('input, textarea');
+            const saveButtons = document.getElementById('saveButtons');
+            const editButton = event.target;
+
+            if (isEditMode) {
+                // Save original values
+                inputs.forEach(input => {
+                    originalValues[input.id] = input.value;
+                    input.disabled = false;
+                    input.classList.remove('bg-gray-50');
+                });
+                saveButtons.classList.remove('hidden');
+                editButton.textContent = 'Cancel';
+                editButton.onclick = cancelEdit;
+            } else {
+                cancelEdit();
+            }
+        }
+
+        function cancelEdit() {
+            isEditMode = false;
+            const form = document.getElementById('profileForm');
+            const inputs = form.querySelectorAll('input, textarea');
+            const saveButtons = document.getElementById('saveButtons');
+            const editButton = document.querySelector('button[onclick*="toggleEditMode"]');
+
+            // Restore original values
+            inputs.forEach(input => {
+                input.value = originalValues[input.id] || input.value;
+                input.disabled = true;
+                input.classList.add('bg-gray-50');
+            });
+            saveButtons.classList.add('hidden');
+            editButton.textContent = 'Edit Profile';
+            editButton.onclick = toggleEditMode;
+        }
+
+        async function handleProfileUpdate(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {
+                fullname: formData.get('name'),
+                contactNumber: formData.get('phone'),
+                address: formData.get('location'),
+                bio: formData.get('bio')
+            };
+
+            // Get JWT token from cookies
+            const token = window.authChecker?.getJWTToken();
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/user/profile', {
+                    method: 'PUT',
+                    headers: headers,
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    // Update displayed values
+                    document.getElementById('profileName').textContent = result.fullname;
+                    document.getElementById('profileEmail').textContent = result.email;
+                    toastSuccess('Profile updated successfully!');
+                    cancelEdit();
+                    // Reload profile data to get updated info
+                    loadProfile();
+                } else {
+                    const error = await response.json();
+                    toastError('Failed to update profile: ' + (error.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                toastError('Failed to update profile. Please try again.');
+            }
+        }
+
+        async function handleAvatarChange(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                toastError('Please select an image file');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                toastError('Image size must be less than 5MB');
+                return;
+            }
+
+            // Show preview immediately
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('profileAvatar').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Upload to server
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Get JWT token from cookies
+            const token = window.authChecker?.getJWTToken();
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            // Note: Do NOT set Content-Type header - browser will set it automatically with boundary for FormData
+
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/user/profile/avatar', {
+                    method: 'POST',
+                    headers: headers,
+                    credentials: 'include',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    // Update avatar URL
+                    document.getElementById('profileAvatar').src = result.avatarUrl;
+                    toastSuccess('Avatar uploaded successfully!');
+                } else {
+                    const error = await response.json();
+                    toastError('Failed to upload avatar: ' + (error.message || 'Unknown error'));
+                    // Reload original avatar
+                    loadProfile();
+                }
+            } catch (error) {
+                console.error('Error uploading avatar:', error);
+                toastError('Failed to upload avatar. Please try again.');
+                // Reload original avatar
+                loadProfile();
+            }
+        }
+
+        function changePassword() {
+            const modal = document.getElementById('passwordModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            
+            // Clear form and errors
+            document.getElementById('passwordForm').reset();
+            document.getElementById('passwordError').classList.add('hidden');
+            document.getElementById('passwordMatchError').classList.add('hidden');
+        }
+
+        function closePasswordModal(event) {
+            const modal = document.getElementById('passwordModal');
+            
+            // If event is provided, only close if clicking the backdrop
+            if (event) {
+                if (event.target === event.currentTarget || event.target.closest('button[onclick*="closePasswordModal"]')) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = ''; // Restore scrolling
+                }
+            } else {
+                // Called directly from close button or Escape key
+                modal.classList.add('hidden');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+        }
+
+        function handlePasswordChange(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            const currentPassword = formData.get('currentPassword');
+            const newPassword = formData.get('newPassword');
+            const confirmPassword = formData.get('confirmPassword');
+            
+            // Clear previous errors
+            const errorDiv = document.getElementById('passwordError');
+            const matchError = document.getElementById('passwordMatchError');
+            errorDiv.classList.add('hidden');
+            matchError.classList.add('hidden');
+            
+            // Validate passwords match
+            if (newPassword !== confirmPassword) {
+                matchError.classList.remove('hidden');
+                return;
+            }
+            
+            // Validate password length
+            if (newPassword.length < 6) {
+                errorDiv.textContent = 'New password must be at least 6 characters long';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            // Prepare request data
+            const data = {
+                currentPassword: currentPassword,
+                newPassword: newPassword,
+                confirmPassword: confirmPassword
+            };
+            
+            // Get JWT token from cookies
+            const token = window.authChecker?.getJWTToken();
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            // Disable submit button
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Changing...';
+            
+            fetch('http://localhost:8080/api/auth/user/profile/password', {
+                method: 'PUT',
+                headers: headers,
+                credentials: 'include',
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.message && result.message.includes('successfully')) {
+                    toastSuccess('Password changed successfully!');
+                    closePasswordModal();
+                    form.reset();
+                } else {
+                    errorDiv.textContent = result.message || 'Failed to change password';
+                    errorDiv.classList.remove('hidden');
+                    toastError(result.message || 'Failed to change password');
+                }
+            })
+            .catch(error => {
+                console.error('Error changing password:', error);
+                errorDiv.textContent = 'Failed to change password. Please try again.';
+                errorDiv.classList.remove('hidden');
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Change Password';
+            });
+        }
+
+        async function openPrivacySettings() {
+            const modal = document.getElementById('privacyModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            
+            // Load current privacy settings
+            await loadPrivacySettings();
+        }
+
+        async function loadPrivacySettings() {
+            try {
+                const token = window.authChecker?.getJWTToken();
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const response = await fetch('http://localhost:8080/api/auth/user/profile/privacy', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: headers
+                });
+
+                if (response.ok) {
+                    const settings = await response.json();
+                    
+                    // Set profile visibility radio button
+                    const visibilityRadio = document.querySelector(`input[name="profileVisibility"][value="${settings.profileVisibility || 'public'}"]`);
+                    if (visibilityRadio) {
+                        visibilityRadio.checked = true;
+                    }
+                    
+                    // Set checkboxes
+                    document.getElementById('showEmail').checked = settings.showEmail !== false;
+                    document.getElementById('showPhone').checked = settings.showPhone !== false;
+                    document.getElementById('showInSearch').checked = settings.showInSearch !== false;
+                    document.getElementById('allowMessages').checked = settings.allowMessages !== false;
+                } else {
+                    console.error('Failed to load privacy settings');
+                    // Set defaults
+                    document.querySelector('input[name="profileVisibility"][value="public"]').checked = true;
+                    document.getElementById('showEmail').checked = true;
+                    document.getElementById('showPhone').checked = true;
+                    document.getElementById('showInSearch').checked = true;
+                    document.getElementById('allowMessages').checked = true;
+                }
+            } catch (error) {
+                console.error('Error loading privacy settings:', error);
+                // Set defaults on error
+                document.querySelector('input[name="profileVisibility"][value="public"]').checked = true;
+                document.getElementById('showEmail').checked = true;
+                document.getElementById('showPhone').checked = true;
+                document.getElementById('showInSearch').checked = true;
+                document.getElementById('allowMessages').checked = true;
+            }
+        }
+
+        function closePrivacyModal(event) {
+            const modal = document.getElementById('privacyModal');
+            
+            // If event is provided, only close if clicking the backdrop
+            if (event) {
+                if (event.target === event.currentTarget || event.target.closest('button[onclick*="closePrivacyModal"]')) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = ''; // Restore scrolling
+                }
+            } else {
+                // Called directly from close button or Escape key
+                modal.classList.add('hidden');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+        }
+
+        async function savePrivacySettings() {
+            // Get all privacy settings
+            const profileVisibility = document.querySelector('input[name="profileVisibility"]:checked').value;
+            const showEmail = document.getElementById('showEmail').checked;
+            const showPhone = document.getElementById('showPhone').checked;
+            const showInSearch = document.getElementById('showInSearch').checked;
+            const allowMessages = document.getElementById('allowMessages').checked;
+
+            const settings = {
+                profileVisibility,
+                showEmail,
+                showPhone,
+                showInSearch,
+                allowMessages
+            };
+
+            // Get JWT token from cookies
+            const token = window.authChecker?.getJWTToken();
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/user/profile/privacy', {
+                    method: 'PUT',
+                    headers: headers,
+                    credentials: 'include',
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    toastSuccess('Privacy settings saved successfully!');
+                    closePrivacyModal();
+                } else {
+                    const error = await response.json();
+                    toastError('Failed to save privacy settings: ' + (error.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error saving privacy settings:', error);
+                toastError('Failed to save privacy settings. Please try again.');
+            }
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const privacyModal = document.getElementById('privacyModal');
+                const passwordModal = document.getElementById('passwordModal');
+                const deleteAccountModal = document.getElementById('deleteAccountModal');
+                if (!privacyModal.classList.contains('hidden')) {
+                    closePrivacyModal();
+                }
+                if (!passwordModal.classList.contains('hidden')) {
+                    closePasswordModal();
+                }
+                if (!deleteAccountModal.classList.contains('hidden')) {
+                    closeDeleteAccountModal();
+                }
+            }
+        });
+        
+
+        function deleteAccount() {
+            const modal = document.getElementById('deleteAccountModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            
+            // Reset form
+            document.getElementById('deleteAccountForm').reset();
+            document.getElementById('deleteAccountError').classList.add('hidden');
+        }
+
+        function closeDeleteAccountModal(event) {
+            const modal = document.getElementById('deleteAccountModal');
+            
+            // If event is provided, only close if clicking the backdrop
+            if (event) {
+                if (event.target === event.currentTarget || event.target.closest('button[onclick*="closeDeleteAccountModal"]')) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = ''; // Restore scrolling
+                }
+            } else {
+                // Called directly from close button or Escape key
+                modal.classList.add('hidden');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+        }
+
+        async function handleDeleteAccount(event) {
+            event.preventDefault();
+            
+            const password = document.getElementById('deletePassword').value;
+            const confirmCheckbox = document.getElementById('confirmDelete');
+            const errorDiv = document.getElementById('deleteAccountError');
+            
+            // Reset error message
+            errorDiv.classList.add('hidden');
+            
+            // Validate password
+            if (!password || password.trim() === '') {
+                errorDiv.textContent = 'Password is required.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            // Validate checkbox
+            if (!confirmCheckbox.checked) {
+                errorDiv.textContent = 'Please confirm that you understand this action is permanent.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            try {
+                // Get JWT token from cookies
+                const token = window.authChecker?.getJWTToken();
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                const response = await fetch('http://localhost:8080/api/auth/user/account/delete', {
+                    method: 'DELETE',
+                    headers: headers,
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        password: password
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    // Close modal
+                    closeDeleteAccountModal();
+                    // Show success message
+                    toastSuccess('Your account has been successfully deleted.');
+                    // Redirect to login page
+                    window.location.href = 'http://localhost:8080/pages/auth/LoginPage.html';
+                } else {
+                    const error = await response.json();
+                    errorDiv.textContent = error.message || 'Failed to delete account. Please try again.';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                errorDiv.textContent = 'Failed to delete account. Please try again.';
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        async function loadProfile() {
+            try {
+                // Get JWT token from cookies
+                const token = window.authChecker?.getJWTToken();
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const response = await fetch('http://localhost:8080/api/auth/user/profile', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: headers
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update profile header
+                    document.getElementById('profileName').textContent = data.fullname || 'User';
+                    document.getElementById('profileEmail').textContent = data.email || '';
+                    
+                    // Update member since date
+                    if (data.createdAt) {
+                        const createdDate = new Date(data.createdAt);
+                        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                          'July', 'August', 'September', 'October', 'November', 'December'];
+                        const month = monthNames[createdDate.getMonth()];
+                        const year = createdDate.getFullYear();
+                        document.getElementById('memberSince').textContent = `Member since ${month} ${year}`;
+                    } else {
+                        document.getElementById('memberSince').textContent = 'Member since';
+                    }
+                    
+                    // Update avatar
+                    if (data.avatarUrl) {
+                        document.getElementById('profileAvatar').src = data.avatarUrl;
+                    } else {
+                        // Use default avatar based on name
+                        const name = encodeURIComponent(data.fullname || 'User');
+                        document.getElementById('profileAvatar').src = `https://ui-avatars.com/api/?name=${name}&background=000000&color=ffffff&size=200`;
+                    }
+                    
+                    // Update form fields
+                    document.getElementById('name').value = data.fullname || '';
+                    document.getElementById('email').value = data.email || '';
+                    document.getElementById('phone').value = data.contactNumber || '';
+                    document.getElementById('location').value = data.address || '';
+                    document.getElementById('bio').value = data.bio || '';
+                    
+                    // Save original values
+                    originalValues = {
+                        name: data.fullname || '',
+                        email: data.email || '',
+                        phone: data.contactNumber || '',
+                        location: data.address || '',
+                        bio: data.bio || ''
+                    };
+                } else {
+                    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                    console.error('Failed to load profile:', response.status, errorData);
+                    
+                    if (response.status === 403) {
+                        console.error('403 Forbidden - Authentication failed. Please log in again.');
+                        toastError('Your session has expired. Please log in again.');
+                        window.location.href = 'http://localhost:8080/pages/auth/LoginPage.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            }
+        }
+
+        async function loadUserStats() {
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/item/my-items', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const items = data.items || [];
+                    
+                    // Calculate stats
+                    const totalItems = items.length;
+                    const resolved = items.filter(item => item.status === 'resolved').length;
+                    const active = items.filter(item => item.status === 'active').length;
+                    const helpful = items.reduce((sum, item) => sum + (item.views || 0), 0);
+
+                    // Update stats display
+                    document.getElementById('totalItems').textContent = totalItems;
+                    document.getElementById('resolvedItems').textContent = resolved;
+                    document.getElementById('activeItems').textContent = active;
+                    document.getElementById('helpfulCount').textContent = helpful;
+                } else {
+                    console.error('Failed to load user stats');
+                    // Set defaults to 0 if failed
+                    document.getElementById('totalItems').textContent = '0';
+                    document.getElementById('resolvedItems').textContent = '0';
+                    document.getElementById('activeItems').textContent = '0';
+                    document.getElementById('helpfulCount').textContent = '0';
+                }
+            } catch (error) {
+                console.error('Error loading user stats:', error);
+                // Set defaults to 0 if error
+                document.getElementById('totalItems').textContent = '0';
+                document.getElementById('resolvedItems').textContent = '0';
+                document.getElementById('activeItems').textContent = '0';
+                document.getElementById('helpfulCount').textContent = '0';
+            }
+        }
+
+        // Initialize - fetch user data
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfile();
+            loadUserStats();
+            
+            // Real-time password match validation
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const matchError = document.getElementById('passwordMatchError');
+            
+            if (newPasswordInput && confirmPasswordInput && matchError) {
+                function validatePasswordMatch() {
+                    if (confirmPasswordInput.value && newPasswordInput.value !== confirmPasswordInput.value) {
+                        matchError.classList.remove('hidden');
+                    } else {
+                        matchError.classList.add('hidden');
+                    }
+                }
+                
+                newPasswordInput.addEventListener('input', validatePasswordMatch);
+                confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+            }
+        });
+    </script>
+</body>
+</html>
+

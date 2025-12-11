@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Items - Lost & Found Registry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Authentication Checker - Protects this page -->
+    <script src="../../js/auth-checker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../js/toaster.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .item-card {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        .item-card:nth-child(1) { animation-delay: 0.1s; opacity: 0; }
+        .item-card:nth-child(2) { animation-delay: 0.2s; opacity: 0; }
+        .item-card:nth-child(3) { animation-delay: 0.3s; opacity: 0; }
+        .item-card:nth-child(4) { animation-delay: 0.4s; opacity: 0; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header Navigation -->
+    <header class="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <nav class="flex justify-between items-center max-w-7xl mx-auto px-4 py-3">
+            <a href="SearchEnginePage.html" class="text-xl font-semibold text-black">Lost & Found</a>
+            <div class="flex items-center space-x-6">
+                <a href="MyItemsPage.html" class="text-black font-medium border-b-2 border-black">My Items</a>
+                <a href="ReportItemPage.html" class="text-black hover:text-gray-600 transition-colors">Report Item</a>
+                <a href="MessagesPage.html" class="text-black hover:text-gray-600 transition-colors">Messages</a>
+                <a href="ProfilePage.html" class="text-black hover:text-gray-600 transition-colors">Profile</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-semibold text-black mb-2">My Items</h1>
+            <p class="text-gray-600">Manage your reported lost and found items</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex space-x-4 mb-6 border-b border-gray-200">
+            <button onclick="filterItems('all')" id="filter-all" class="px-4 py-2 font-medium text-black border-b-2 border-black transition-colors">
+                All Items
+            </button>
+            <button onclick="filterItems('lost')" id="filter-lost" class="px-4 py-2 font-medium text-gray-600 hover:text-black border-b-2 border-transparent transition-colors">
+                Lost
+            </button>
+            <button onclick="filterItems('found')" id="filter-found" class="px-4 py-2 font-medium text-gray-600 hover:text-black border-b-2 border-transparent transition-colors">
+                Found
+            </button>
+        </div>
+
+        <!-- Items Grid -->
+        <div id="itemsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Items will be dynamically inserted here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-16">
+            <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No items found</h3>
+            <p class="text-gray-600 mb-4">You haven't reported any items yet.</p>
+            <a href="ReportItemPage.html" class="inline-block px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
+                Report Your First Item
+            </a>
+        </div>
+    </main>
+
+    <!-- View Item Modal -->
+    <div id="viewModal" class="hidden fixed inset-0 z-50 overflow-y-auto" onclick="closeViewModal(event)">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+            <div class="relative bg-white rounded-lg border-2 border-black shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between p-6 border-b-2 border-black">
+                    <h2 class="text-2xl font-semibold text-black">Item Details</h2>
+                    <button onclick="closeViewModal()" class="text-black hover:text-gray-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-6" id="viewModalContent">
+                    <!-- Content will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div id="editModal" class="hidden fixed inset-0 z-50 overflow-y-auto" onclick="closeEditModal(event)">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+            <div class="relative bg-white rounded-lg border-2 border-black shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between p-6 border-b-2 border-black">
+                    <h2 class="text-2xl font-semibold text-black">Edit Item</h2>
+                    <button onclick="closeEditModal()" class="text-black hover:text-gray-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form id="editItemForm" onsubmit="saveItemEdit(event)" class="p-6">
+                    <input type="hidden" id="editItemId" name="itemId">
+                    
+                    <div class="space-y-6">
+                        <!-- Item Type -->
+                        <div>
+                            <label class="block text-sm font-semibold text-black mb-3">Item Type *</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="relative cursor-pointer">
+                                    <input type="radio" name="editItemType" value="lost" id="editTypeLost" class="peer hidden" required>
+                                    <div class="border-2 border-gray-300 rounded-lg p-4 text-center peer-checked:border-black peer-checked:bg-black peer-checked:text-white transition-all">
+                                        <div class="font-semibold">Lost Item</div>
+                                    </div>
+                                </label>
+                                <label class="relative cursor-pointer">
+                                    <input type="radio" name="editItemType" value="found" id="editTypeFound" class="peer hidden" required>
+                                    <div class="border-2 border-gray-300 rounded-lg p-4 text-center peer-checked:border-black peer-checked:bg-black peer-checked:text-white transition-all">
+                                        <div class="font-semibold">Found Item</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Item Name -->
+                        <div>
+                            <label for="editItemName" class="block text-sm font-semibold text-black mb-2">Item Name *</label>
+                            <input type="text" id="editItemName" name="itemName" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors">
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label for="editDescription" class="block text-sm font-semibold text-black mb-2">Description *</label>
+                            <textarea id="editDescription" name="description" required rows="4" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors resize-none"></textarea>
+                        </div>
+
+                        <!-- Location -->
+                        <div>
+                            <label for="editLocation" class="block text-sm font-semibold text-black mb-2">Location *</label>
+                            <input type="text" id="editLocation" name="location" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors">
+                        </div>
+
+                        <!-- Date -->
+                        <div>
+                            <label for="editDate" class="block text-sm font-semibold text-black mb-2">Date *</label>
+                            <input type="date" id="editDate" name="date" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-black focus:outline-none transition-colors">
+                        </div>
+
+                        <!-- Status -->
+                        <div>
+                            <label class="block text-sm font-semibold text-black mb-3">Status *</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="relative cursor-pointer">
+                                    <input type="radio" name="editStatus" value="active" id="editStatusActive" class="peer hidden" required>
+                                    <div class="border-2 border-gray-300 rounded-lg p-4 text-center peer-checked:border-black peer-checked:bg-black peer-checked:text-white transition-all">
+                                        <div class="font-semibold">Active</div>
+                                    </div>
+                                </label>
+                                <label class="relative cursor-pointer">
+                                    <input type="radio" name="editStatus" value="resolved" id="editStatusResolved" class="peer hidden" required>
+                                    <div class="border-2 border-gray-300 rounded-lg p-4 text-center peer-checked:border-black peer-checked:bg-black peer-checked:text-white transition-all">
+                                        <div class="font-semibold">Resolved</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end space-x-4 mt-6 pt-6 border-t-2 border-black">
+                        <button type="button" onclick="closeEditModal()" class="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-black hover:text-black transition-colors font-semibold">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-semibold">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="hidden fixed inset-0 z-50 overflow-y-auto" onclick="closeDeleteModal(event)">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+            <div class="relative bg-white rounded-lg border-2 border-black shadow-xl max-w-md w-full" onclick="event.stopPropagation()">
+                <div class="p-6">
+                    <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-black text-center mb-2">Delete Item</h3>
+                    <p class="text-gray-600 text-center mb-6">Are you sure you want to delete this item? This action cannot be undone.</p>
+                    <div class="flex space-x-4">
+                        <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-black hover:text-black transition-colors font-semibold">
+                            Cancel
+                        </button>
+                        <button onclick="confirmDelete()" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let myItems = [];
+        let currentFilter = 'all';
+
+        function renderItemCard(item) {
+            const badgeColor = item.type === 'lost' ? 'bg-red-100 text-red-800 border-red-300' : 'bg-green-100 text-green-800 border-green-300';
+            const statusColor = item.status === 'resolved' ? 'bg-gray-100 text-gray-800 border-gray-300' : 'bg-blue-100 text-blue-800 border-blue-300';
+            const badgeText = item.type === 'lost' ? 'LOST' : 'FOUND';
+            const statusText = item.status === 'resolved' ? 'RESOLVED' : 'ACTIVE';
+            
+            // Handle empty images array
+            const imageUrl = item.images && item.images.length > 0 
+                ? item.images[0] 
+                : 'https://via.placeholder.com/500x500?text=No+Image';
+
+            return `
+                <div class="item-card bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                    <!-- Item Image -->
+                    <div class="relative h-48 bg-gray-100">
+                        <img 
+                            src="${imageUrl}" 
+                            alt="${item.itemName}" 
+                            class="w-full h-full object-cover"
+                        >
+                        <div class="absolute top-3 right-3 flex space-x-2">
+                            <span class="px-2 py-1 text-xs font-medium rounded border ${badgeColor}">
+                                ${badgeText}
+                            </span>
+                            <span class="px-2 py-1 text-xs font-medium rounded border ${statusColor}">
+                                ${statusText}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Item Details -->
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg text-black mb-2">${item.itemName}</h3>
+                        <p class="text-sm text-gray-600 mb-3 line-clamp-2">${item.description}</p>
+                        
+                        <div class="flex items-center text-xs text-gray-500 mb-4 space-x-4">
+                            <div class="flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                <span>${item.location}</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span>${new Date(item.date).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="flex items-center justify-end text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100 space-x-4">
+                            <div class="flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                <span>${item.likes || 0} likes</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                <span>${item.messages} messages</span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex space-x-2">
+                            <button onclick="editItem(${item.id})" class="flex-1 px-4 py-2 border-2 border-black text-black rounded-lg hover:bg-black hover:text-white transition-all font-medium text-sm">
+                                Edit
+                            </button>
+                            <button onclick="viewItem(${item.id})" class="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm">
+                                View
+                            </button>
+                            <button onclick="deleteItem(${item.id})" class="px-4 py-2 border-2 border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all font-medium text-sm">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterItems(type) {
+            currentFilter = type;
+            
+            // Update active tab
+            document.querySelectorAll('[id^="filter-"]').forEach(btn => {
+                btn.classList.remove('text-black', 'border-black');
+                btn.classList.add('text-gray-600', 'border-transparent');
+            });
+            document.getElementById(`filter-${type}`).classList.remove('text-gray-600', 'border-transparent');
+            document.getElementById(`filter-${type}`).classList.add('text-black', 'border-black');
+
+            // Filter items
+            const filteredItems = type === 'all' 
+                ? myItems 
+                : myItems.filter(item => item.type === type);
+
+            renderItems(filteredItems);
+        }
+
+        function renderItems(items) {
+            const container = document.getElementById('itemsContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            if (items.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                container.innerHTML = items.map(item => renderItemCard(item)).join('');
+            }
+        }
+
+        let itemToDelete = null;
+
+        function editItem(id) {
+            const item = myItems.find(i => i.id === id);
+            if (!item) return;
+
+            // Populate edit form
+            document.getElementById('editItemId').value = item.id;
+            document.getElementById('editItemName').value = item.itemName;
+            document.getElementById('editDescription').value = item.description;
+            document.getElementById('editLocation').value = item.location;
+            document.getElementById('editDate').value = item.date;
+            
+            // Set item type
+            if (item.type === 'lost') {
+                document.getElementById('editTypeLost').checked = true;
+            } else {
+                document.getElementById('editTypeFound').checked = true;
+            }
+            
+            // Set status
+            if (item.status === 'active') {
+                document.getElementById('editStatusActive').checked = true;
+            } else {
+                document.getElementById('editStatusResolved').checked = true;
+            }
+
+            // Show modal
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditModal(event) {
+            if (event && event.target !== event.currentTarget && !event.target.closest('button[onclick*="closeEditModal"]')) {
+                return;
+            }
+            const modal = document.getElementById('editModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function saveItemEdit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const itemId = parseInt(formData.get('itemId'));
+            const item = myItems.find(i => i.id === itemId);
+            
+            if (item) {
+                // Update item
+                item.itemName = formData.get('itemName');
+                item.description = formData.get('description');
+                item.location = formData.get('location');
+                item.date = formData.get('date');
+                item.type = formData.get('editItemType');
+                item.status = formData.get('editStatus');
+
+                // In production: fetch(`/api/items/${itemId}`, { method: 'PUT', body: JSON.stringify(item) })
+                
+                // Re-render
+                filterItems(currentFilter);
+                closeEditModal();
+                toastSuccess('Item updated successfully!');
+            }
+        }
+
+        function viewItem(id) {
+            const item = myItems.find(i => i.id === id);
+            if (!item) return;
+
+            const badgeColor = item.type === 'lost' ? 'bg-red-100 text-red-800 border-red-300' : 'bg-green-100 text-green-800 border-green-300';
+            const statusColor = item.status === 'resolved' ? 'bg-gray-100 text-gray-800 border-gray-300' : 'bg-blue-100 text-blue-800 border-blue-300';
+            const badgeText = item.type === 'lost' ? 'LOST' : 'FOUND';
+            const statusText = item.status === 'resolved' ? 'RESOLVED' : 'ACTIVE';
+
+            const imageUrl = item.images && item.images.length > 0 
+                ? item.images[0] 
+                : 'https://via.placeholder.com/500x500?text=No+Image';
+            
+            const content = `
+                <div class="space-y-6">
+                    <!-- Item Image -->
+                    <div class="relative h-64 bg-gray-100 rounded-lg overflow-hidden">
+                        <img src="${imageUrl}" alt="${item.itemName}" class="w-full h-full object-cover">
+                        <div class="absolute top-4 right-4 flex space-x-2">
+                            <span class="px-3 py-1 text-sm font-medium rounded border ${badgeColor}">${badgeText}</span>
+                            <span class="px-3 py-1 text-sm font-medium rounded border ${statusColor}">${statusText}</span>
+                        </div>
+                    </div>
+
+                    <!-- Item Details -->
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-black mb-2">${item.itemName}</h3>
+                            <p class="text-gray-700">${item.description}</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+                            <div>
+                                <p class="text-sm text-gray-500 mb-1">Location</p>
+                                <p class="font-medium text-black">${item.location}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 mb-1">Date</p>
+                                <p class="font-medium text-black">${new Date(item.date).toLocaleDateString()}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 mb-1">Likes</p>
+                                <p class="font-medium text-black">${item.likes || 0}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 mb-1">Messages</p>
+                                <p class="font-medium text-black">${item.messages}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('viewModalContent').innerHTML = content;
+            const modal = document.getElementById('viewModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeViewModal(event) {
+            if (event && event.target !== event.currentTarget && !event.target.closest('button[onclick*="closeViewModal"]')) {
+                return;
+            }
+            const modal = document.getElementById('viewModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function deleteItem(id) {
+            itemToDelete = id;
+            const modal = document.getElementById('deleteModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal(event) {
+            if (event && event.target !== event.currentTarget && !event.target.closest('button[onclick*="closeDeleteModal"]') && !event.target.closest('button[onclick*="confirmDelete"]')) {
+                return;
+            }
+            const modal = document.getElementById('deleteModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            itemToDelete = null;
+        }
+
+        function confirmDelete() {
+            if (!itemToDelete) return;
+
+            // In production: fetch(`/api/items/${itemToDelete}`, { method: 'DELETE' })
+            
+            // Remove from array and re-render
+            const index = myItems.findIndex(item => item.id === itemToDelete);
+            if (index > -1) {
+                myItems.splice(index, 1);
+                filterItems(currentFilter);
+            }
+
+            closeDeleteModal();
+            toastSuccess('Item deleted successfully!');
+        }
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeViewModal();
+                closeEditModal();
+                closeDeleteModal();
+            }
+        });
+
+        // Load items from API
+        async function loadMyItems() {
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/item/my-items', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    myItems = data.items || [];
+                    
+                    // Transform data to match frontend expectations
+                    myItems = myItems.map(item => ({
+                        id: item.id,
+                        itemName: item.itemName,
+                        description: item.description,
+                        images: item.images || [],
+                        location: item.location,
+                        date: item.date,
+                        status: item.status,
+                        type: item.type,
+                        views: item.views || 0,
+                        messages: item.messages || 0,
+                        likes: item.likes || 0
+                    }));
+                    
+                    renderItems(myItems);
+                } else {
+                    const error = await response.json();
+                    console.error('Failed to load items:', error);
+                    renderItems([]);
+                }
+            } catch (error) {
+                console.error('Error loading items:', error);
+                renderItems([]);
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMyItems();
+        });
+    </script>
+</body>
+</html>
+

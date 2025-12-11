@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - Lost & Found Registry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Authentication Checker - Protects this page -->
+    <script src="../../js/auth-checker.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .post-item {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        .post-item:nth-child(1) { animation-delay: 0.1s; opacity: 0; }
+        .post-item:nth-child(2) { animation-delay: 0.2s; opacity: 0; }
+        .post-item:nth-child(3) { animation-delay: 0.3s; opacity: 0; }
+        .post-item:nth-child(4) { animation-delay: 0.4s; opacity: 0; }
+        .post-item:nth-child(5) { animation-delay: 0.5s; opacity: 0; }
+        
+        .image-grid {
+            display: grid;
+            gap: 2px;
+            width: 100%;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .image-grid-1 {
+            grid-template-columns: 1fr;
+            aspect-ratio: 1;
+        }
+        
+        .image-grid-2 {
+            grid-template-columns: 1fr 1fr;
+            aspect-ratio: 2 / 1;
+        }
+        
+        .image-grid-3 {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            aspect-ratio: 1;
+        }
+        
+        .image-grid-3 .image-wrapper:first-child {
+            grid-row: 1 / 3;
+        }
+        
+        .image-grid-4 {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            aspect-ratio: 1;
+        }
+        
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f3f4f6;
+        }
+        
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header Navigation -->
+    <header class="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <nav class="flex justify-between items-center max-w-7xl mx-auto px-4 py-3">
+            <a href="SearchEnginePage.html" class="text-xl font-semibold text-black">Lost & Found</a>
+            <div class="flex items-center space-x-6">
+                <a href="MyItemsPage.html" class="text-black hover:text-gray-600 transition-colors">My Items</a>
+                <a href="ReportItemPage.html" class="text-black hover:text-gray-600 transition-colors">Report Item</a>
+                <a href="MessagesPage.html" class="text-black hover:text-gray-600 transition-colors">Messages</a>
+                <a href="ProfilePage.html" class="text-black hover:text-gray-600 transition-colors">Profile</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-2xl mx-auto px-4 py-6">
+        <!-- Search Query Display -->
+        <div class="mb-6">
+            <h2 class="text-2xl font-semibold text-black mb-2">Search Results</h2>
+            <p class="text-gray-600" id="searchQuery">Showing results for: <span id="queryText"></span></p>
+        </div>
+
+        <!-- Results Feed Container -->
+        <div id="resultsFeed" class="space-y-4">
+            <!-- Results will be dynamically inserted here -->
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="text-center py-8 text-gray-500">
+            Loading results...
+        </div>
+    </main>
+
+    <script>
+        // Store results data for updating likes
+        let currentResults = [];
+
+        // Get search query from URL
+        function getQueryParam() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('q') || '';
+        }
+
+        // Render image grid based on number of images
+        function renderImageGrid(images) {
+            const imageCount = images.length;
+            let gridClass = 'image-grid ';
+            
+            if (imageCount === 1) {
+                gridClass += 'image-grid-1';
+            } else if (imageCount === 2) {
+                gridClass += 'image-grid-2';
+            } else if (imageCount === 3) {
+                gridClass += 'image-grid-3';
+            } else {
+                gridClass += 'image-grid-4';
+            }
+
+            let html = `<div class="${gridClass}">`;
+            
+            // Show first 4 images max
+            const imagesToShow = images.slice(0, 4);
+            imagesToShow.forEach((img, index) => {
+                const isLastImage = index === 3;
+                const hasMoreImages = imageCount > 4 && isLastImage;
+                
+                html += `
+                    <div class="image-wrapper">
+                        <img 
+                            src="${img}" 
+                            alt="Item image ${index + 1}"
+                            style="${hasMoreImages ? 'filter: brightness(0.4);' : ''}"
+                        >
+                        ${hasMoreImages ? `
+                            <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 z-10">
+                                <span class="text-white text-3xl font-bold">+${imageCount - 4}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        // Render a single post item
+        function renderPostItem(item) {
+            const hasMoreThan3Images = item.images.length > 3;
+            const imageGrid = renderImageGrid(item.images);
+            const badgeColor = item.type === 'lost' ? 'bg-red-100 text-red-800 border-red-300' : 'bg-green-100 text-green-800 border-green-300';
+            const badgeText = item.type === 'lost' ? 'LOST' : 'FOUND';
+            
+            // Check if profile is viewable based on privacy settings
+            const canViewProfile = item.profileVisibility === 'public' || item.profileVisibility === 'items-only';
+            const clickHandler = canViewProfile ? `onclick="viewUserProfile(${item.userId}, '${item.profileVisibility}')"` : '';
+            const cursorStyle = canViewProfile ? 'cursor-pointer' : 'cursor-default';
+            const nameHoverStyle = canViewProfile ? 'hover:underline' : '';
+
+            return `
+                <div class="post-item bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                    <!-- Post Header -->
+                    <div class="p-4 flex items-center space-x-3 border-b border-gray-100">
+                        <img 
+                            src="${item.userAvatar}" 
+                            alt="${item.userName}" 
+                            ${clickHandler}
+                            class="w-10 h-10 rounded-full border-2 border-black object-cover ${cursorStyle} ${canViewProfile ? 'hover:opacity-80 transition-opacity' : ''}"
+                            title="${canViewProfile ? 'View Profile' : 'Profile is private'}"
+                        >
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2">
+                                <h3 
+                                    ${clickHandler}
+                                    class="font-semibold text-black ${nameHoverStyle} ${cursorStyle}"
+                                    title="${canViewProfile ? 'View Profile' : 'Profile is private'}"
+                                >
+                                    ${item.userName}
+                                </h3>
+                                <span class="px-2 py-0.5 text-xs font-medium rounded border ${badgeColor}">
+                                    ${badgeText}
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-500">${item.date} • ${item.location}</p>
+                        </div>
+                    </div>
+
+                    <!-- Post Content -->
+                    <div class="p-4">
+                        <h4 class="font-semibold text-lg text-black mb-2">${item.itemName}</h4>
+                        <p class="text-gray-700 mb-4">${item.description}</p>
+                        
+                        <!-- Image Grid -->
+                        <div class="mb-4 relative">
+                            ${imageGrid}
+                        </div>
+                    </div>
+
+                    <!-- Post Actions -->
+                    <div class="px-4 pb-4 flex items-center justify-between border-t border-gray-100 pt-3">
+                        <div class="flex items-center space-x-4">
+                            <button 
+                                onclick="handleLike(${item.id})" 
+                                id="likeBtn_${item.id}"
+                                class="flex items-center space-x-2 ${item.isLiked ? 'text-red-600' : 'text-gray-600'} hover:text-red-600 transition-colors"
+                            >
+                                <svg 
+                                    id="likeIcon_${item.id}"
+                                    class="w-5 h-5 ${item.isLiked ? 'fill-current' : ''}" 
+                                    fill="${item.isLiked ? 'currentColor' : 'none'}" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                <span class="text-sm font-medium" id="likeText_${item.id}">
+                                    ${item.isLiked ? 'Liked' : 'Like'}
+                                </span>
+                                <span class="text-sm font-medium" id="likeCount_${item.id}">
+                                    ${item.likeCount || 0}
+                                </span>
+                            </button>
+                        </div>
+                        <button onclick="handleMessage(${item.id})" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                            <span>Message</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render all results
+        function renderResults(results) {
+            const feedContainer = document.getElementById('resultsFeed');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            
+            loadingIndicator.style.display = 'none';
+            
+            // Store results for later updates
+            currentResults = results;
+            
+            if (results.length === 0) {
+                feedContainer.innerHTML = `
+                    <div class="bg-white rounded-lg border border-gray-200 p-8 text-center">
+                        <p class="text-gray-600 text-lg">No results found. Try a different search term.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            feedContainer.innerHTML = results.map(item => renderPostItem(item)).join('');
+        }
+
+        function handleMessage(itemId) {
+            // Find the item to get userId
+            const item = currentResults.find(i => i.id === itemId);
+            if (item && item.userId) {
+                // Navigate to messages page with both userId and itemId
+                window.location.href = `MessagesPage.html?userId=${item.userId}&itemId=${itemId}`;
+            } else {
+                // Fallback: try with just itemId
+                window.location.href = `MessagesPage.html?itemId=${itemId}`;
+            }
+        }
+
+        // Handle like button click
+        async function handleLike(itemId) {
+            try {
+                const response = await fetch(`http://localhost:8080/api/auth/like/${itemId}`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update the item in currentResults
+                    const itemIndex = currentResults.findIndex(item => item.id === itemId);
+                    if (itemIndex !== -1) {
+                        currentResults[itemIndex].isLiked = data.isLiked;
+                        currentResults[itemIndex].likeCount = data.likeCount;
+                        
+                        // Update UI
+                        const likeBtn = document.getElementById(`likeBtn_${itemId}`);
+                        const likeIcon = document.getElementById(`likeIcon_${itemId}`);
+                        const likeText = document.getElementById(`likeText_${itemId}`);
+                        const likeCount = document.getElementById(`likeCount_${itemId}`);
+                        
+                        if (data.isLiked) {
+                            likeBtn.classList.remove('text-gray-600');
+                            likeBtn.classList.add('text-red-600');
+                            likeIcon.setAttribute('fill', 'currentColor');
+                            likeIcon.classList.add('fill-current');
+                            likeText.textContent = 'Liked';
+                        } else {
+                            likeBtn.classList.remove('text-red-600');
+                            likeBtn.classList.add('text-gray-600');
+                            likeIcon.setAttribute('fill', 'none');
+                            likeIcon.classList.remove('fill-current');
+                            likeText.textContent = 'Like';
+                        }
+                        
+                        likeCount.textContent = data.likeCount || 0;
+                    }
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        alert('Please log in to like items.');
+                        window.location.href = '/pages/auth/LoginPage.html';
+                    } else {
+                        const error = await response.json().catch(() => ({ message: 'Failed to like item' }));
+                        alert(error.message || 'Failed to like item. Please try again.');
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling like:', error);
+                alert('Failed to like item. Please try again.');
+            }
+        }
+
+        // Handle profile visit
+        function viewUserProfile(userId, profileVisibility) {
+            // Navigate to the user's profile page
+            if (profileVisibility === 'public' || profileVisibility === 'items-only') {
+                window.location.href = `ViewUserProfilePage.html?userId=${userId}`;
+            } else {
+                // Private profile - shouldn't reach here since button won't show, but handle it
+                alert('This profile is private and cannot be viewed.');
+            }
+        }
+
+        function init() {
+            const query = getQueryParam();
+            document.getElementById('queryText').textContent = query || 'all items';
+            
+            const apiUrl = query 
+                ? `/api/auth/search-engine/search?q=${encodeURIComponent(query)}`
+                : '/api/auth/search-engine/search';
+            
+           
+            fetch(apiUrl, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => {
+                if (res.status === 401 || res.status === 403) {
+                    // Token expired or invalid, redirect to login
+                    window.location.href = '/pages/auth/LoginPage.html';
+                    return null;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.results) {
+                    renderResults(data.results);
+                } else {
+                    renderResults([]);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching search results:', error);
+                renderResults([]);
+            });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+
