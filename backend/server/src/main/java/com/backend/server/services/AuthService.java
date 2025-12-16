@@ -1,7 +1,5 @@
 package com.backend.server.services;
 
-import java.util.Optional;
-
 import org.elasticsearch.ResourceAlreadyExistsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;

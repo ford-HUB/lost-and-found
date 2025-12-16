@@ -55,6 +55,12 @@
                 <a href="ReportItemPage.html" class="text-black hover:text-gray-600 transition-colors">Report Item</a>
                 <a href="MessagesPage.html" class="text-black font-medium border-b-2 border-black">Messages</a>
                 <a href="ProfilePage.html" class="text-black hover:text-gray-600 transition-colors">Profile</a>
+                <button 
+                    onclick="showLogoutConfirmation()"
+                    class="text-red-600 hover:text-red-700 transition-colors font-medium"
+                >
+                    Logout
+                </button>
             </div>
         </nav>
     </header>
@@ -772,7 +778,6 @@
             }
         }
 
-        // Load public profile details (email/phone, item info) for the conversation's other user
         async function ensureConversationProfile(conversation) {
             if (!conversation || !conversation.userId) return conversation;
 
@@ -816,7 +821,7 @@
                 console.error('Error loading public profile for conversation user:', error);
             }
 
-            // Fallback: if we still don't have item description/image, try search API by itemId
+            // fallback if we still don't have item description/image, try search API by itemId
             if ((!conversation.itemDescription && !conversation.itemImage) && conversation.itemId) {
                 try {
                     const searchResponse = await fetch('http://localhost:8080/api/auth/search-engine/search?q=', {
@@ -851,12 +856,10 @@
             return conversation;
         }
 
-        // Smoothly scroll the chat messages container to the bottom
         function scrollChatToBottom() {
             const messagesContainer = document.getElementById('chatMessages');
             if (!messagesContainer) return;
 
-            // Defer until after DOM paint to ensure correct scrollHeight
             requestAnimationFrame(() => {
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             });

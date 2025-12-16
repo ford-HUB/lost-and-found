@@ -8,9 +8,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -105,6 +103,27 @@ public class AuthController {
             Map<String, String> responseError = new HashMap<>();
             responseError.put("message", "Internal Server Error"+e.getMessage());
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseError);
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout() {
+        try {
+            ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Account successfully logged out");
+            return ResponseEntity.status(HttpStatus.OK).header("Set-Cookie", cookie.toString()).body(response);
+        } catch (Exception e) {
+            Map<String, String> responseError = new HashMap<>();
+            responseError.put("message", "Internal Server Error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseError);
         }
     }
     

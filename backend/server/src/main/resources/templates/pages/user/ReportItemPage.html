@@ -44,6 +44,12 @@
                 <a href="ReportItemPage.html" class="text-black font-medium border-b-2 border-black">Report Item</a>
                 <a href="MessagesPage.html" class="text-black hover:text-gray-600 transition-colors">Messages</a>
                 <a href="ProfilePage.html" class="text-black hover:text-gray-600 transition-colors">Profile</a>
+                <button 
+                    onclick="showLogoutConfirmation()"
+                    class="text-red-600 hover:text-red-700 transition-colors font-medium"
+                >
+                    Logout
+                </button>
             </div>
         </nav>
     </header>
@@ -320,7 +326,108 @@
             const today = new Date().toISOString().split('T')[0];
             dateInput.value = today;
         });
+
+        function showLogoutConfirmation() {
+            const modal = document.getElementById('logoutModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLogoutModal(event) {
+            const modal = document.getElementById('logoutModal');
+            if (event) {
+                if (event.target === event.currentTarget || event.target.closest('button[onclick*="closeLogoutModal"]')) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            } else {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                const token = window.authChecker?.getJWTToken();
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const response = await fetch('http://localhost:8080/api/auth/logout', {
+                    method: 'POST',
+                    headers: headers,
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    toastSuccess('You have been successfully logged out.');
+                    closeLogoutModal();
+                    setTimeout(() => {
+                        window.location.href = 'http://localhost:8080/pages/auth/LoginPage.html';
+                    }, 1000);
+                } else {
+                    const error = await response.json();
+                    toastError('Failed to logout: ' + (error.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error logging out:', error);
+                toastError('Failed to logout. Please try again.');
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const logoutModal = document.getElementById('logoutModal');
+                if (logoutModal && !logoutModal.classList.contains('hidden')) {
+                    closeLogoutModal();
+                }
+            }
+        });
     </script>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutModal" class="hidden fixed inset-0 z-50 overflow-y-auto" onclick="closeLogoutModal(event)">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+            <div class="relative bg-white rounded-lg border-2 border-black shadow-xl max-w-md w-full" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between p-6 border-b-2 border-black">
+                    <h2 class="text-2xl font-semibold text-black">Confirm Logout</h2>
+                    <button 
+                        onclick="closeLogoutModal()"
+                        type="button"
+                        class="text-black hover:text-gray-600 transition-colors"
+                    >
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <p class="text-gray-700">
+                        Are you sure you want to logout? You will need to login again to access your account.
+                    </p>
+                </div>
+                <div class="flex items-center justify-end space-x-4 p-6 border-t-2 border-black bg-gray-50">
+                    <button 
+                        onclick="closeLogoutModal()"
+                        class="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-black hover:text-black transition-colors font-semibold"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onclick="handleLogout()"
+                        class="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-semibold"
+                    >
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 

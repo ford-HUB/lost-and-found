@@ -153,7 +153,7 @@
                             <input 
                                 type="tel" 
                                 id="phone"
-                                placeholder="+1 (555) 000-0000"
+                                placeholder="099190****"
                                 class="w-full px-4 py-3 border-2 border-black rounded-full input-focus focus:outline-none transition bg-white text-black placeholder-gray-500"
                                 length="11"
                                 required
@@ -244,14 +244,6 @@
                             <input type="checkbox" id="terms" class="w-4 h-4 mt-1 text-black border-2 border-black rounded focus:ring-black" required>
                             <label class="ml-2 text-sm text-gray-600 font-light">
                                 I agree to the <a href="#" class="text-black font-medium hover:text-gray-600 transition-colors">Terms of Service</a> and <a href="#" class="text-black font-medium hover:text-gray-600 transition-colors">Privacy Policy</a>
-                            </label>
-                        </div>
-
-                        <!-- Newsletter -->
-                        <div class="flex items-start">
-                            <input type="checkbox" id="newsletter" class="w-4 h-4 mt-1 text-black border-2 border-black rounded focus:ring-black">
-                            <label class="ml-2 text-sm text-gray-600 font-light">
-                                Send me updates about new features and lost item matches
                             </label>
                         </div>
 
@@ -428,10 +420,12 @@
                 body: JSON.stringify(payload)
             }).then(response => response.json()).then(data => {
                 toastSuccess(data.message)
+                setTimeout(() => {
+                    window.location.href = 'LoginPage.html';
+                }, 1500);
                 console.log('success test', data)
             }
-            )
-            .catch(error => toastError(error))   
+            ).catch(error => toastError(error))   
         });
     </script>
 </body>
